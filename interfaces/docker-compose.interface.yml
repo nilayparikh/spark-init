@@ -1,5 +1,27 @@
 ---
+# ─── Interfaces Layer ─────────────────────────────────────────────────────────
+# This compose file defines two types of services:
+#   1. LiteLLM proxy – the API gateway that handles auth, routing, and logging
+#   2. llama.cpp backends – GPU inference containers for each model
+#
+# LiteLLM reaches llama.cpp via host.docker.internal (host networking),
+# because llama.cpp runs on host ports for direct GPU access.
+#
+# Provider credentials (API keys, base URLs) are set via .env and cascaded
+# through multiple fallback names for backward compatibility.
+# ──────────────────────────────────────────────────────────────────────────────
+
 services:
+  # ── LiteLLM Proxy ─────────────────────────────────────────────────────────
+  # Unified API gateway. Exposes three surfaces on :4000:
+  #   OpenAI /v1/chat/completions – standard chat API
+  #   OpenAI /v1/responses        – OpenAI responses API
+  #   Anthropic /v1/messages      – Claude Code compatibility
+  #
+  # Routes by model name to local (llama.cpp) or cloud backends.
+  # Auth via Bearer token (LITELLM_MASTER_KEY).
+  # Usage logs to PostgreSQL for spend tracking.
+  # ────────────────────────────────────────────────────────────────────────────
   litellm:
     image: ${LITELLM_IMAGE:-docker.litellm.ai/berriai/litellm:latest}
     container_name: ${LITELLM_CONTAINER_NAME:-litellm}
@@ -19,19 +41,33 @@ services:
     ports:
       - "${LITELLM_BIND_HOST:-0.0.0.0}:${LITELLM_PORT:-4000}:${LITELLM_PORT:-4000}"
     extra_hosts:
+      # Allows LiteLLM to reach llama.cpp on host ports
       - host.docker.internal:host-gateway
     environment:
       LITELLM_LOG_LEVEL: ${LITELLM_LOG_LEVEL:-INFO}
       LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:-sk-interface-ui-local}
+
+      # LiteLLM config flags
       NO_DOCS: ${LITELLM_NO_DOCS:-True}
       NO_REDOC: ${LITELLM_NO_REDOC:-True}
+
+      # Postgres connection for spend logging + provider config storage
       DATABASE_URL: ${INTERFACE_DATABASE_URL:-postgresql://litellm_interface:litellm_interface_local@postgres:5432/litellm_interface}
+
+      # ── Local backends ──────────────────────────────────────────────────
+      # Each DGX_* group defines: base URL, API key, and model ID for one backend.
+      # Multiple fallback names allow config migration without breaking .env files.
+      # Map to the active profile: M=llama-qwen-3-6-27b (Pro/27B), S=llama-qwen-3-6-35b-a3b (Flash/35B A3B)
       DGX_SPARK_M_BASE_URL: ${DGX_SPARK_M_BASE_URL:-${PRO_BASE_URL:-${INTERFACE_QWEN_3_6_27B_BASE_URL:-http://host.docker.internal:8000/v1}}}
       DGX_SPARK_M_API_KEY: ${DGX_SPARK_M_API_KEY:-${PRO_API_KEY:-${INTERFACE_QWEN_3_6_27B_API_KEY:-sk-dummy}}}
       DGX_SPARK_M_SERVING_MODEL: ${DGX_SPARK_M_MODEL:-${PRO_MODEL:-${INTERFACE_QWEN_3_6_27B_MODEL:-openai/qwen3.6_27b}}}
       DGX_SPARK_S_BASE_URL: ${DGX_SPARK_S_BASE_URL:-${FLASH_BASE_URL:-${INTERFACE_QWEN_3_6_35B_A3B_BASE_URL:-http://host.docker.internal:8001/v1}}}
       DGX_SPARK_S_API_KEY: ${DGX_SPARK_S_API_KEY:-${FLASH_API_KEY:-${INTERFACE_QWEN_3_6_35B_A3B_API_KEY:-sk-dummy}}}
       DGX_SPARK_S_SERVING_MODEL: ${DGX_SPARK_S_MODEL:-${FLASH_MODEL:-${INTERFACE_QWEN_3_6_35B_A3B_MODEL:-openai/qwen3.6_35b_a3b}}}
+
+      # ── Cloud providers ─────────────────────────────────────────────────
+      # Each group is read by the matching provider fragment in config/litellm/providers/.
+      # Set API keys in .env; leave empty to disable that provider.
       MICROSOFT_FOUNDRY_API_BASE: ${MICROSOFT_FOUNDRY_API_BASE:-https://tuts.services.ai.azure.com/openai/v1}
       MICROSOFT_FOUNDRY_API_KEY: ${MICROSOFT_FOUNDRY_API_KEY:-}
       AZURE_ORCHESTRATOR_API_BASE: ${AZURE_ORCHESTRATOR_API_BASE:-${MICROSOFT_FOUNDRY_API_BASE:-https://tuts.services.ai.azure.com/openai/v1}}
@@ -46,6 +82,19 @@ services:
     volumes:
       - ./config/litellm:/app/litellm-config:ro
 
+  # ── llama.cpp 27B (DGX Spark M / .INIT/Pro) ─────────────────────────────
+  # Qwen 3.6 27B with MTP speculative decoding.
+  # Context: 128K, threads: 8, batch: 2048.
+  # Key flags:
+  #   --jinja --chat-template-file    : custom Qwen chat template (reasoning format)
+  #   --reasoning on --reasoning-format deepseek : chain-of-thought
+  #   --spec-type draft-mtp           : multi-token prediction for speed
+  #   -c 131072                       : 128K context window
+  #   --cont-batching --cache-prompt  : continuous batching + prompt caching
+  #   -ngl all -fa on                 : all layers to GPU, flash attention
+  #   --mlock                         : lock model in RAM
+  #   --metrics                       : Prometheus endpoint on /metrics
+  # ──────────────────────────────────────────────────────────────────────────
   llama-qwen-3-6-27b:
     build:
       context: ./dockerfiles
@@ -145,6 +194,12 @@ services:
               count: all
               capabilities: [gpu]
 
+  # ── llama.cpp 35B A3B (DGX Spark S / .INIT/Flash) ────────────────────────
+  # Qwen 3.6 35B A3B (3.5B active params) with multimodal support.
+  # Same flags as 27B, plus:
+  #   -mm /models/mmproj.gguf         : multimodal projector for vision
+  #   -c 262144                       : 256K context window (double the 27B)
+  # ──────────────────────────────────────────────────────────────────────────
   llama-qwen-3-6-35b-a3b:
     build:
       context: ./dockerfiles

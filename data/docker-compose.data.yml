@@ -1,4 +1,13 @@
 ---
+# ── Data Layer ───────────────────────────────────────────────────────────────
+# Shared PostgreSQL for the whole stack.
+# Used by: LiteLLM (spend logs, provider config), Grafana (dashboards, users)
+#
+# Bootstrap scripts in config/postgres-init/ create databases + users on first
+# start: 010-grafana.sh, 020-litellm-interface.sh
+# Each consumer gets its own database and user within the same Postgres instance.
+# ──────────────────────────────────────────────────────────────────────────────
+
 services:
   postgres:
     image: ${DATA_POSTGRES_IMAGE}

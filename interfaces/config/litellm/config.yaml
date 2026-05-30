@@ -1,6 +1,20 @@
 ---
-# Root LiteLLM config. Provider catalogs live under providers/.
-# YAML anchors stay local to each file because aliases do not span files.
+# ── LiteLLM Root Configuration ──────────────────────────────────────────────
+# This is the central routing table for the whole inference stack.
+# It includes per-provider fragments that define model_list entries.
+#
+# Key concepts:
+#   model_group_alias  → maps .INIT/Pro, .INIT/Flash, .INIT/Ultra
+#                        to specific provider models for Claude Code
+#   use_chat_completions_url_for_anthropic_messages → translates Anthropic
+#                        payload format to OpenAI shape for non-Anthropic backends
+#   drop_params: true   → strips unsupported params before forwarding,
+#                        keeping OpenAI-compatible clients working
+#   callbacks: prometheus → exposes LiteLLM metrics at /metrics/
+#
+# Provider fragments live under providers/ and are referenced by include.
+# YAML anchors do NOT span files, so each fragment defines its own.
+# ──────────────────────────────────────────────────────────────────────────────
 include:
   - providers/azure-foundry.yaml
   - providers/dgx-spark.yaml
@@ -14,8 +28,13 @@ general_settings:
   store_prompts_in_spend_logs: true
 
 router_settings:
-  num_retries: 5
+  num_retries: 5      # Retry on timeout/rate-limit (not on auth errors)
   retry_after: 0
+  # ── Model group aliases for Claude Code ──────────────────────────────────
+  # These map short .INIT/ names to specific provider models.
+  # Claude Code discovers them via gateway model discovery (/v1/models)
+  # and presents them in /model.
+  # ──────────────────────────────────────────────────────────────────────────
   model_group_alias:
     ".INIT/Ultra": "OpenCodeZen/BIG-PICKLE"
     ".INIT/Pro": "DGX/Qwen3.6-27B"

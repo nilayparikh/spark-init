@@ -127,23 +127,90 @@ Launches an isolated Claude Code container (NVIDIA PyTorch base) routed through 
 
 The image uses `.INIT/Pro`, `.INIT/Flash`, `.INIT/Ultra` model aliases mapped to the LiteLLM backends (see `claude-code.sh` for the full routing table).
 
-## Key Files to Know
+## File Map (for AI Agents)
 
-| File                                            | Purpose                                                |
-| ----------------------------------------------- | ------------------------------------------------------ |
-| `.env.example`                                  | Template for local `.env` — all configurable variables |
-| `docker-compose.yml`                            | Root compose — includes all sub-compose files          |
-| `interfaces/config/litellm/config.yaml`         | LiteLLM provider routing config                        |
-| `interfaces/config/qwen3.6/chat_template.jinja` | Chat template for Qwen 3.6                             |
-| `observability/config/config.alloy`             | Alloy collector configuration                          |
-| `observability/config/grafana/provisioning/`    | Grafana dashboards & data sources                      |
-| `data/config/postgres-init/`                    | Database bootstrap scripts                             |
-| `scripts/`                                      | GPU smoke tests, harness scripts                       |
-| `docs/`                                         | MkDocs documentation site                              |
+This indexed catalog covers all source files, configuration, and documentation. Use it to locate any file without searching.
 
-## Documentation
+### Root-Level
 
-The docs site is built with MkDocs (`mkdocs.yml`). Source lives in `docs/`. Deploy via `deploy-docs.yml` workflow.
+| File | Purpose |
+| -------------------- | --------------------------------------------------------- |
+| `docker-compose.yml` | Root compose — includes all sub-compose files via `include:` |
+| `.env.example` | All configurable variables with defaults and descriptions |
+| `claude-code.sh` | Launch Claude Code container routed through LiteLLM proxy |
+| `mkdocs.yml` | MkDocs site configuration (Material theme) |
+| `CLAUDE.md` | This file — guidance for AI agents |
+
+### Data Layer (`data/`)
+
+| File | Purpose |
+| ---------------------------------------------------- | --------------------------------------------------------- |
+| `data/docker-compose.data.yml` | PostgreSQL service definition with health check |
+| `data/config/postgres-init/010-grafana.sh` | Creates Grafana database + user on first start |
+| `data/config/postgres-init/020-litellm-interface.sh` | Creates LiteLLM database + user on first start |
+
+### Interfaces Layer (`interfaces/`)
+
+| File | Purpose |
+| -------------------------------------------------------- | --------------------------------------------------------- |
+| `interfaces/docker-compose.interface.yml` | LiteLLM proxy + llama.cpp service definitions (all flags documented inline) |
+| `interfaces/config/litellm/config.yaml` | LiteLLM routing: provider includes, model_group_alias, retry policy |
+| `interfaces/config/litellm/providers/dgx-spark.yaml` | Local DGX model routing (27B + 35B A3B) |
+| `interfaces/config/litellm/providers/azure-foundry.yaml` | Azure Foundry cloud models |
+| `interfaces/config/litellm/providers/deepseek.yaml` | DeepSeek native API |
+| `interfaces/config/litellm/providers/nvidia.yaml` | NVIDIA AI Endpoints |
+| `interfaces/config/litellm/providers/opencode-zen.yaml` | OpenCode Zen models |
+| `interfaces/config/qwen3.6/chat_template.jinja` | Jinja2 chat template for Qwen 3.6 (reasoning format) |
+| `interfaces/dockerfiles/Dockerfile` | llama.cpp CUDA Docker image (aarch64, CUDA 13.1.2) |
+
+### Observability Layer (`observability/`)
+
+| File | Purpose |
+| -------------------------------------------- | --------------------------------------------------------- |
+| `observability/docker-compose.obs.yml` | Mimir, Loki, Alloy, cAdvisor, DCGM, Grafana service definitions |
+| `observability/config/config.alloy` | Grafana Alloy pipeline — scrape configs + label conventions (all inline) |
+| `observability/config/loki-config.yaml` | Loki single-binary storage config |
+| `observability/config/mimir-config.yaml` | Mimir single-binary storage config |
+| `observability/config/grafana/provisioning/datasources/` | Mimir + Loki data source definitions |
+| `observability/config/grafana/provisioning/dashboards/machine/` | JSON dashboard definitions (7 dashboards) |
+| `observability/config/grafana/provisioning/alerting/machine-alerts.yaml` | Alert rules (GPU thermal, filesystem, host saturation) |
+
+### Network (`network/`)
+
+| File | Purpose |
+| ----------------------------- | --------------------------------------------------------- |
+| `network/docker-compose.yaml` | Cloudflare Tunnel service for external access |
+
+### Scripts (`scripts/`)
+
+| File | Purpose |
+| ------------------------------------------- | --------------------------------------------------------- |
+| `scripts/gpu-persistent-setting.sh` | Apply persistent GPU mode + lock clock speeds |
+| `scripts/litellm-claude-smoke-test.sh` | Validate Claude Code model discovery + routing |
+| `scripts/spark-gpu-smoke-test.py` | Verify GPU, CUDA, and container toolkit |
+| `scripts/spark-gpu-throttle-test.py` | GPU throttle behavior testing |
+| `scripts/spark-a3b-long-context-harness.py` | Long-context inference benchmark |
+| `scripts/nvidia_system_info.py` | System information reporter |
+
+### Documentation (`docs/`)
+
+| File | Purpose (Human-First) |
+| --------------------------------------------------------- | --------------------------------------------------------- |
+| `docs/index.md` | Project overview and quick start |
+| `docs/quickstart.md` | 5-minute getting-started guide |
+| `docs/capabilities.md` | Feature-driven capability reference |
+| `docs/architecture.md` | High-level architecture (one diagram, three layers) |
+| `docs/configuration.md` | How-to configure (profiles, .env) |
+| `docs/guides.md` | Task-oriented recipes (add model, GPU tuning, troubleshooting) |
+| `docs/reference.md` | Quick-lookup tables (models, ports, scripts) |
+
+### GitHub CI (`.github/workflows/`)
+
+| File | Purpose |
+| --------------------------------------------------------- | --------------------------------------------------------- |
+| `.github/workflows/lint.yml` | YAML lint, ShellCheck, Python syntax on push/PR |
+| `.github/workflows/docker-build.yml` | Build `llama-cpp-dgx` image and push to GHCR |
+| `.github/workflows/deploy-docs.yml` | Deploy MkDocs site to GitHub Pages |
 
 ## Submodules
 

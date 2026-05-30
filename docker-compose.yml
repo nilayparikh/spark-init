@@ -1,4 +1,15 @@
 ---
+# ── Root Docker Compose ──────────────────────────────────────────────────────
+# Entry point for the entire .init stack.
+#
+# Includes all layer-specific compose files. Each is independently
+# controllable via COMPOSE_PROFILES in .env.
+#
+# The external network (init_default) is what allows cross-compose
+# service discovery — containers in different files resolve each other
+# by container name through Docker's embedded DNS.
+# ──────────────────────────────────────────────────────────────────────────────
+
 include:
   - ./data/docker-compose.data.yml
   - ./observability/docker-compose.obs.yml

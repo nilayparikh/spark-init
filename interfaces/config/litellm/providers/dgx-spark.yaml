@@ -1,9 +1,19 @@
 ---
+# ── DGX Spark (Local) Provider ──────────────────────────────────────────────
+# Routes to llama.cpp running on localhost (host.docker.internal).
+# Two models: 27B (full params) and 35B A3B (sparse, vision-capable).
+#
+# The model, api_base, and api_key all come from environment variables
+# injected by docker-compose.interface.yml (DGX_SPARK_M_* / DGX_SPARK_S_*).
+# ──────────────────────────────────────────────────────────────────────────────
+
 model_list:
-  # Base profile definition for DGX models.
+  # ── .INIT/Pro alias maps here ────────────────────────────────────────────
+  # Qwen 3.6 27B — primary coding/reasoning model
+  # Backend: llama.cpp on localhost:8000
   - model_name: DGX/Qwen3.6-27B
     litellm_params:
-      &dgx_qwen_params # Force LiteLLM to translate Claude Code's Anthropic payload into OpenAI structure
+      &dgx_qwen_params
       model: openai/os.environ/DGX_SPARK_M_SERVING_MODEL
       api_base: os.environ/DGX_SPARK_M_BASE_URL
       api_key: os.environ/DGX_SPARK_M_API_KEY
@@ -54,6 +64,10 @@ model_list:
         - top_p
         - stop
 
+  # ── .INIT/Flash alias maps here ───────────────────────────────────────────
+  # Qwen 3.6 35B A3B — fast, large-context, vision-capable
+  # 256K context window, multimodal (mmproj for vision tasks)
+  # Backend: llama.cpp on localhost:8001
   - model_name: DGX/Qwen3.6-35B-A3B
     litellm_params:
       <<: *dgx_qwen_params

@@ -1,3 +1,12 @@
+# ── Network / Tunnel Services ────────────────────────────────────────────────
+# Defines optional services for external access.
+#
+# cloudflared – Cloudflare Tunnel for exposing the stack externally.
+#   Requires CLOUDFLARE_TUNNEL_TOKEN in .env.
+#   Enables secure access to Grafana, LiteLLM, etc. without opening firewall ports.
+#   Activate with profile: network (or "all").
+# ──────────────────────────────────────────────────────────────────────────────
+
 services:
   cloudflared:
     image: cloudflare/cloudflared:latest

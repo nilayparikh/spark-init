@@ -1,3 +1,34 @@
+// ── Grafana Alloy Configuration ────────────────────────────────────────────
+// This file defines the full observability pipeline:
+//   1. Collect: Unix exporter (host), DCGM (GPU), cAdvisor (containers),
+//               Docker discovery (LiteLLM, llama.cpp metrics),
+//               Docker logs (stdout/stderr), systemd journal
+//   2. Relabel: Enrich all metrics and logs with standard labels for
+//               cross-service correlation in Grafana
+//   3. Forward: Metrics → Mimir, Logs → Loki
+//
+// Label Conventions (for AI agents reading this file):
+//   cluster_tenant  – logical tenant group ("spark_dgx_core")
+//   environment     – deployment stage ("personal")
+//   stack           – observability stack name ("observability-core")
+//   site            – physical/logical site
+//   role            – machine role ("spark-dgx")
+//   host            – stable machine identifier
+//   job             – normalized collector name
+//     machine-linux     – host telemetry (CPU, memory, disk)
+//     machine-docker    – container telemetry (cAdvisor)
+//     machine-gpu       – GPU telemetry (DCGM)
+//     interface-llm     – inference metrics (LiteLLM + llama.cpp)
+//     machine-journal   – systemd journal logs
+//     ubuntu-*          – OS maintenance logs
+//   log_domain      – "kernel" or "service"
+//   log_category     – kernel, system-service, gpu-driver, container-runtime
+//   vendor           – linux, nvidia, container
+//
+// For humans: skip these details. The Grafana dashboards work out of the box.
+// This comment exists for AI coding agents who need to extend the pipeline.
+// ────────────────────────────────────────────────────────────────────────────
+
 prometheus.exporter.unix "host" {
   procfs_path = "/host/proc"
   sysfs_path  = "/host/sys"

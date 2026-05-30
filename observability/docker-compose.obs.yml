@@ -1,5 +1,26 @@
 ---
+# ── Observability Layer ──────────────────────────────────────────────────────
+# Auto-collected telemetry for the full stack.
+# Flow: Alloy scrapes everything → Mimir (metrics) + Loki (logs) → Grafana
+#
+# Services:
+#   mimir        – Prometheus-compatible time-series backend (metrics)
+#   loki         – Log aggregation backend
+#   alloy        – Collector: scrapes GPU/container/host + Docker logs
+#   gpu-telemetry – DCGM exporter for NVIDIA GPU metrics
+#   cadvisor     – Container resource metrics
+#   grafana      – Dashboard UI (auto-provisioned dashboards + data sources)
+#
+# All services join the init_default network for cross-compose discovery.
+# ──────────────────────────────────────────────────────────────────────────────
+
 services:
+  # ── Mimir (Metrics) ───────────────────────────────────────────────────────
+  # Prometheus-compatible time-series store. Single-binary mode.
+  # Filesystem-backed (no S3/GCS dependency).
+  # Retention: 7d (configurable via MIMIR_RETENTION_PERIOD).
+  # Scraped by Alloy, queried by Grafana.
+  # ──────────────────────────────────────────────────────────────────────────
   mimir:
     image: grafana/mimir:latest
     container_name: mimir
@@ -22,6 +43,12 @@ services:
       - ./config/alertmanager-fallback.yaml:/etc/mimir/alertmanager-fallback.yaml:ro
       - ../data/storage/mimir:/var/lib/mimir
 
+  # ── Loki (Logs) ──────────────────────────────────────────────────────────
+  # Log aggregation store. Single-binary, filesystem-backed.
+  # Retention: 2d (configurable via LOKI_RETENTION_PERIOD).
+  # Receives Docker container logs + systemd journal from Alloy.
+  # Queried by Grafana Explore and log dashboards.
+  # ──────────────────────────────────────────────────────────────────────────
   loki:
     image: grafana/loki:latest
     container_name: loki
@@ -44,6 +71,13 @@ services:
       - ./config/loki-config.yaml:/etc/loki/loki-config.yaml:ro
       - ../data/storage/loki:/var/lib/loki
 
+  # ── Alloy (Collector) ────────────────────────────────────────────────────
+  # Central telemetry collector (replaces Prometheus + Promtail).
+  # Scrapes: GPU (DCGM :9400), containers (cAdvisor :8080),
+  #          host (Unix exporter), LiteLLM & llama.cpp metrics endpoints
+  # Ships:  metrics → Mimir, logs → Loki
+  # Auto-discovers services via Docker socket (no config per new service).
+  # ──────────────────────────────────────────────────────────────────────────
   alloy:
     image: grafana/alloy:latest
     container_name: alloy
@@ -82,6 +116,12 @@ services:
       - /sys:/host/sys:ro
       - /:/host/root:ro
 
+  # ── GPU Telemetry ──────────────────────────────────────────────────────────
+  # DCGM (NVIDIA Data Center GPU Manager) exporter.
+  # Distroless container — no shell, just metrics at :9400/metrics.
+  # Scraped by Alloy every 5s, shipped to Mimir with job="machine-gpu".
+  # Exposes: utilization, memory, thermals, power, clocks, ECC errors.
+  # ──────────────────────────────────────────────────────────────────────────
   gpu-telemetry:
     image: nvcr.io/nvidia/k8s/dcgm-exporter:4.5.3-4.8.2-distroless
     container_name: gpu-telemetry
@@ -96,6 +136,11 @@ services:
     cap_add:
       - SYS_ADMIN
 
+  # ── cAdvisor (Container Metrics) ──────────────────────────────────────────
+  # Collects CPU, memory, network, and filesystem metrics per container.
+  # Scraped by Alloy every 15s, shipped to Mimir with job="machine-docker".
+  # Limited to Docker-in-Docker (--docker_only=true) — skips non-Docker cgroups.
+  # ──────────────────────────────────────────────────────────────────────────
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.52.1
     container_name: cadvisor
@@ -120,6 +165,14 @@ services:
       - /var/lib/docker:/var/lib/docker:ro
       - /dev/disk:/dev/disk:ro
 
+  # ── Grafana (Dashboards) ──────────────────────────────────────────────────
+  # Visualization UI. Auto-provisions:
+  #   - Data sources: Mimir (metrics) + Loki (logs)
+  #   - Dashboards: machine overview, GPU signals, container logs, etc.
+  #   - Alert rules from provisioning/alerting/
+  # Login: admin / $GRAFANA_ADMIN_PASSWORD (from .env)
+  # Requires Postgres healthy, Mimir + Loki started before launching.
+  # ──────────────────────────────────────────────────────────────────────────
   grafana:
     image: grafana/grafana-oss:latest
     container_name: grafana
