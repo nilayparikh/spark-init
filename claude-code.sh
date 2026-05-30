@@ -20,6 +20,7 @@ ENV_FILE="${WORKSPACE_DIR}/.env"
 if [ -f "$ENV_FILE" ]; then
     echo "📄 [ENV] Found .env file in workspace root. Parsing keys..."
     set -a
+    # shellcheck source=/dev/null
     source <(grep -v '^#' "$ENV_FILE")
     set +a
 else
