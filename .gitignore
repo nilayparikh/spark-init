@@ -69,6 +69,7 @@ dist/
 # Claude Code local settings (machine-specific — keep .claude/settings.json for team)
 .claude/settings.local.json
 .claude/backups
+.claude/plugins
 .claude/file-history
 .claude/plans
 .claude/projects

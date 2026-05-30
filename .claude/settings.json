@@ -11,6 +11,7 @@
     "defaultMode": "bypassPermissions",
     "skipDangerousModePermissionPrompt": true
   },
+  "model": "dgx-qwen3-6-27b-swe",
   "hooks": {
     "PreToolUse": [
       {
@@ -39,6 +40,25 @@
       }
     ]
   },
+  "enabledPlugins": {
+    "github@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "security-guidance@claude-plugins-official": true,
+    "ralph-loop@claude-plugins-official": true,
+    "claude-code-setup@claude-plugins-official": true,
+    "huggingface-skills@claude-plugins-official": true
+  },
+  "extraKnownMarketplaces": {
+    "claude-plugins-official": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/claude-plugins-official"
+      }
+    }
+  },
   "theme": "dark",
   "autoMode": {
     "allow": [
@@ -62,6 +82,5 @@
         "LS"
       ]
     }
-  },
-  "model": "dgx-qwen3-6-27b-swe"
+  }
 }
