@@ -1,6 +1,6 @@
 model_list:
-  - model_name: azure-openai-kimi-k2.6
-    litellm_params: &azure_kimi_upstream_params
+  - model_name: Azure/Kimi-K2.6
+    litellm_params:
       model: openai/Kimi-K2.6-1
       api_base: os.environ/MICROSOFT_FOUNDRY_API_BASE
       api_key: os.environ/MICROSOFT_FOUNDRY_API_KEY
@@ -10,7 +10,7 @@ model_list:
         temperature: 0.1
         top_p: 0.8
         presence_penalty: 0.0
-    model_info: &azure_kimi_base_info
+    model_info:
       id: "azure-openai-kimi-k2-6"
       db_model: false
       supports_reasoning: true
@@ -36,28 +36,14 @@ model_list:
         - top_p
         - stop
 
-  - model_name: azure-anthropic-kimi-k2.6
-    litellm_params: &azure_kimi_anthropic_route_params
-      <<: *azure_kimi_upstream_params
-    model_info:
-      <<: *azure_kimi_base_info
-      id: "azure-anthropic-kimi-k2-6"
-
-  - model_name: claude-opus-4.7
+  - model_name: Azure/DeepSeek V4 Flash
     litellm_params:
-      <<: *azure_kimi_anthropic_route_params
-    model_info:
-      <<: *azure_kimi_base_info
-      id: "claude-opus-4-7"
-
-  - model_name: azure-openai-deepseek-v4-flash
-    litellm_params: &azure_deepseek_flash_upstream_params
       model: openai/DeepSeek-V4-Flash
       api_base: os.environ/MICROSOFT_FOUNDRY_API_BASE
       api_key: os.environ/MICROSOFT_FOUNDRY_API_KEY
       timeout: 300
       drop_params: true
-    model_info: &azure_deepseek_flash_base_info
+    model_info:
       id: "azure-openai-deepseek-v4-flash"
       db_model: false
       supports_reasoning: false
@@ -66,8 +52,6 @@ model_list:
       max_tokens: 1000000
       max_input_tokens: 616000
       max_output_tokens: 384000
-      contextWindow: 1000000
-      maxOutputTokens: 384000
       limit:
         context: 1000000
         output: 384000
@@ -76,9 +60,8 @@ model_list:
       supports_vision: false
       supported_openai_params: *azure_supported_openai_params
 
-  - model_name: azure-anthropic-deepseek-v4-flash
-    litellm_params: &azure_deepseek_flash_anthropic_route_params
-      <<: *azure_deepseek_flash_upstream_params
-    model_info:
-      <<: *azure_deepseek_flash_base_info
-      id: "azure-anthropic-deepseek-v4-flash"
+litellm_settings:
+  drop_params: true
+  modify_params: true
+  set_completed_by_on_stream_chunks: true
+  require_auth_for_metrics_endpoint: false

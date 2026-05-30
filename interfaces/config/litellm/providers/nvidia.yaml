@@ -1,12 +1,12 @@
 model_list:
-  - model_name: nvidia-openai-deepseek-v4-flash
-    litellm_params: &nvidia_deepseek_flash_upstream_params
+  - model_name: NVIDIA/DeepSeek-V4-Flash
+    litellm_params:
       model: openai/deepseek-ai/deepseek-v4-flash
       api_base: os.environ/NVIDIA_BASE_URL
       api_key: os.environ/NVIDIA_API_KEY
       timeout: 300
       drop_params: true
-    model_info: &nvidia_deepseek_flash_base_info
+    model_info:
       id: "nvidia-openai-deepseek-v4-flash"
       db_model: false
       supports_reasoning: false
@@ -15,8 +15,6 @@ model_list:
       max_tokens: 1000000
       max_input_tokens: 616000
       max_output_tokens: 384000
-      contextWindow: 1000000
-      maxOutputTokens: 384000
       limit:
         context: 1000000
         output: 384000
@@ -36,15 +34,8 @@ model_list:
         - top_p
         - stop
 
-  - model_name: nvidia-anthropic-deepseek-v4-flash
-    litellm_params: &nvidia_deepseek_flash_anthropic_route_params
-      <<: *nvidia_deepseek_flash_upstream_params
-    model_info: &nvidia_deepseek_flash_anthropic_route_info
-      <<: *nvidia_deepseek_flash_base_info
-      id: "nvidia-anthropic-deepseek-v4-flash"
-
-  - model_name: nvidia-openai-minimax-m2.7
-    litellm_params: &nvidia_minimax_upstream_params
+  - model_name: NVIDIA/MiniMax-M2.7
+    litellm_params:
       model: openai/minimaxai/minimax-m2.7
       api_base: os.environ/NVIDIA_BASE_URL
       api_key: os.environ/NVIDIA_API_KEY
@@ -54,7 +45,7 @@ model_list:
         temperature: 1.0
         top_p: 0.95
         top_k: 40
-    model_info: &nvidia_minimax_base_info
+    model_info:
       id: "nvidia-openai-minimax-m2-7"
       db_model: false
       supports_reasoning: true
@@ -63,8 +54,6 @@ model_list:
       max_tokens: 204800
       max_input_tokens: 196608
       max_output_tokens: 8192
-      contextWindow: 204800
-      maxOutputTokens: 8192
       limit:
         context: 204800
         output: 8192
@@ -73,15 +62,8 @@ model_list:
       supports_vision: false
       supported_openai_params: *nvidia_supported_openai_params
 
-  - model_name: nvidia-anthropic-minimax-m2.7
-    litellm_params: &nvidia_minimax_anthropic_route_params
-      <<: *nvidia_minimax_upstream_params
-    model_info: &nvidia_minimax_anthropic_route_info
-      <<: *nvidia_minimax_base_info
-      id: "nvidia-anthropic-minimax-m2-7"
-
-  - model_name: nvidia-openai-kimi-k2.6
-    litellm_params: &nvidia_kimi_upstream_params
+  - model_name: NVIDIA/Kimi-K2.6
+    litellm_params:
       model: openai/moonshotai/kimi-k2.6
       api_base: os.environ/NVIDIA_BASE_URL
       api_key: os.environ/NVIDIA_API_KEY
@@ -90,7 +72,7 @@ model_list:
       extra_body:
         chat_template_kwargs:
           thinking: true
-    model_info: &nvidia_kimi_base_info
+    model_info:
       id: "nvidia-openai-kimi-k2-6"
       db_model: false
       supports_reasoning: true
@@ -98,7 +80,6 @@ model_list:
       context_window: 256000
       max_tokens: 256000
       max_input_tokens: 256000
-      contextWindow: 256000
       limit:
         context: 256000
       supports_system_messages: true
@@ -106,9 +87,8 @@ model_list:
       supports_vision: true
       supported_openai_params: *nvidia_supported_openai_params
 
-  - model_name: nvidia-anthropic-kimi-k2.6
-    litellm_params: &nvidia_kimi_anthropic_route_params
-      <<: *nvidia_kimi_upstream_params
-    model_info: &nvidia_kimi_anthropic_route_info
-      <<: *nvidia_kimi_base_info
-      id: "nvidia-anthropic-kimi-k2-6"
+litellm_settings:
+  drop_params: true
+  modify_params: true
+  set_completed_by_on_stream_chunks: true
+  require_auth_for_metrics_endpoint: false

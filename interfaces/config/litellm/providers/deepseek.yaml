@@ -1,6 +1,6 @@
 model_list:
-  - model_name: deepseek-openai-deepseek-v4-flash
-    litellm_params: &deepseek_flash_upstream_params
+  - model_name: DeepSeek/DeepSeek-V4-Flash
+    litellm_params:
       model: openai/deepseek-v4-flash
       api_base: os.environ/DEEPSEEK_BASE_URL
       api_key: os.environ/DEEPSEEK_API_KEY
@@ -8,7 +8,7 @@ model_list:
       drop_params: true
       extra_body:
         reasoning_effort: high
-    model_info: &deepseek_flash_base_info
+    model_info:
       id: "deepseek-openai-deepseek-v4-flash"
       db_model: false
       supports_reasoning: true
@@ -17,8 +17,6 @@ model_list:
       max_tokens: 1000000
       max_input_tokens: 616000
       max_output_tokens: 384000
-      contextWindow: 1000000
-      maxOutputTokens: 384000
       limit:
         context: 1000000
         output: 384000
@@ -40,35 +38,14 @@ model_list:
         - top_p
         - stop
 
-  - model_name: deepseek-anthropic-deepseek-v4-flash
-    litellm_params: &deepseek_flash_anthropic_route_params
-      <<: *deepseek_flash_upstream_params
-    model_info:
-      <<: *deepseek_flash_base_info
-      id: "deepseek-anthropic-deepseek-v4-flash"
-
-  - model_name: claude-haiku-4-5-20251001
+  - model_name: DeepSeek/DeepSeek-V4-Pro
     litellm_params:
-      <<: *deepseek_flash_anthropic_route_params
-    model_info:
-      <<: *deepseek_flash_base_info
-      id: "claude-haiku-4-5-20251001"
-
-  - model_name: claude-haiku-4-5
-    litellm_params:
-      <<: *deepseek_flash_anthropic_route_params
-    model_info:
-      <<: *deepseek_flash_base_info
-      id: "claude-haiku-4-5"
-
-  - model_name: deepseek-openai-deepseek-v4-pro
-    litellm_params: &deepseek_pro_upstream_params
       model: openai/deepseek-v4-pro
       api_base: os.environ/DEEPSEEK_BASE_URL
       api_key: os.environ/DEEPSEEK_API_KEY
       timeout: 300
       drop_params: true
-    model_info: &deepseek_pro_base_info
+    model_info:
       id: "deepseek-openai-deepseek-v4-pro"
       db_model: false
       supports_reasoning: false
@@ -77,8 +54,6 @@ model_list:
       max_tokens: 1000000
       max_input_tokens: 616000
       max_output_tokens: 384000
-      contextWindow: 1000000
-      maxOutputTokens: 384000
       limit:
         context: 1000000
         output: 384000
@@ -89,9 +64,8 @@ model_list:
       output_cost_per_token: 0.00000348
       supported_openai_params: *deepseek_supported_openai_params
 
-  - model_name: deepseek-anthropic-deepseek-v4-pro
-    litellm_params: &deepseek_pro_anthropic_route_params
-      <<: *deepseek_pro_upstream_params
-    model_info:
-      <<: *deepseek_pro_base_info
-      id: "deepseek-anthropic-deepseek-v4-pro"
+litellm_settings:
+  drop_params: true
+  modify_params: true
+  set_completed_by_on_stream_chunks: true
+  require_auth_for_metrics_endpoint: false
