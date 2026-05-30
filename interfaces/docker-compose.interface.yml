@@ -172,10 +172,13 @@ services:
       - "${LLAMA_QWEN_3_6_35B_A3B_BIND_HOST:-0.0.0.0}:${LLAMA_QWEN_3_6_35B_A3B_HOST_PORT:-8001}:${LLAMA_QWEN_3_6_35B_A3B_CONTAINER_PORT:-8080}"
     volumes:
       - ${LLAMA_QWEN_3_6_35B_A3B_GGUF_MODEL_PATH:-../models/.test/qwen3.6-35b-a3b-nvfp4-mtp.gguf}:/models/model.gguf:ro
+      - ${LLAMA_QWEN_3_6_35B_A3B_MMPROJ_MODEL_PATH:-../models/.test/mmproj-BF16.gguf}:/models/mmproj.gguf:ro
       - ./config/qwen3.6/chat_template.jinja:/workspace/chat_template.jinja:ro
     command:
       - "-m"
       - "/models/model.gguf"
+      - "-mm"
+      - "/models/mmproj.gguf"
       - "-a"
       - "qwen3.6_35b_a3b"
       - "--jinja"

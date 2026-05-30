@@ -70,6 +70,7 @@ model_list:
       context_window: 262144
       max_tokens: 262144
       max_input_tokens: 245760
+      supports_vision: true
 
 litellm_settings:
   drop_params: true

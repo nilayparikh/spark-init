@@ -1,5 +1,6 @@
 {
-  "numStartups": 4,
+  "numStartups": 5,
+  "hasSeenTasksHint": true,
   "tipsHistory": {
     "new-user-warmup": 4,
     "plan-mode-for-complex-tasks": 1,
@@ -23,7 +24,7 @@
   "sonnet1m45MigrationComplete": true,
   "seenNotifications": {},
   "migrationVersion": 13,
-  "lastReleaseNotesSeen": "2.1.154",
+  "lastReleaseNotesSeen": "2.1.157",
   "officialMarketplaceAutoInstallAttempted": true,
   "officialMarketplaceAutoInstalled": false,
   "officialMarketplaceAutoInstallFailReason": "policy_blocked",
@@ -46,61 +47,61 @@
         "litellm_metrics_fix.py"
       ],
       "lastGracefulShutdown": false,
-      "lastVersionBase": "2.1.154",
+      "lastVersionBase": "2.1.157",
       "hasCompletedProjectOnboarding": true,
       "exampleFilesGeneratedAt": 1780091438474,
-      "lastCost": 40.442224999999986,
-      "lastAPIDuration": 3427839,
-      "lastAPIDurationWithoutRetries": 3427028,
-      "lastToolDuration": 4905,
-      "lastDuration": 8049281,
-      "lastLinesAdded": 1587,
-      "lastLinesRemoved": 86,
-      "lastTotalInputTokens": 7868535,
-      "lastTotalOutputTokens": 43982,
+      "lastCost": 24.354409999999994,
+      "lastAPIDuration": 1608255,
+      "lastAPIDurationWithoutRetries": 1607271,
+      "lastToolDuration": 789829,
+      "lastDuration": 3647143,
+      "lastLinesAdded": 156,
+      "lastLinesRemoved": 0,
+      "lastTotalInputTokens": 4748442,
+      "lastTotalOutputTokens": 24488,
       "lastTotalCacheCreationInputTokens": 0,
       "lastTotalCacheReadInputTokens": 0,
       "lastTotalWebSearchRequests": 0,
-      "lastFpsAverage": 7.77,
-      "lastFpsLow1Pct": 292.92,
+      "lastFpsAverage": 10.67,
+      "lastFpsLow1Pct": 182.89,
       "lastModelUsage": {
-        "dgx-qwen3-6-27b-swe": {
-          "inputTokens": 883,
-          "outputTokens": 666,
+        "dgx-qwen3-6-35b-a3b": {
+          "inputTokens": 16243,
+          "outputTokens": 4744,
           "cacheReadInputTokens": 0,
           "cacheCreationInputTokens": 0,
           "webSearchRequests": 0,
-          "costUSD": 0.021065
+          "costUSD": 0.19981499999999996
         },
-        "dgx-qwen3-6-27b-swe[1m]": {
-          "inputTokens": 7867652,
-          "outputTokens": 43316,
+        "dgx-qwen3-6-27b-swe": {
+          "inputTokens": 4732199,
+          "outputTokens": 19744,
           "cacheReadInputTokens": 0,
           "cacheCreationInputTokens": 0,
           "webSearchRequests": 0,
-          "costUSD": 40.421159999999986
+          "costUSD": 24.154594999999997
         }
       },
-      "lastSessionId": "ec689db5-9f25-4d4d-af86-0067d3e3076e",
+      "lastSessionId": "75ebe224-aba8-4816-a6b4-b60e82be930e",
       "lastSessionMetrics": {
-        "frame_duration_ms_count": 62526,
-        "frame_duration_ms_min": 0.03759999998146668,
-        "frame_duration_ms_max": 41.480773999821395,
-        "frame_duration_ms_avg": 1.4607335763690408,
-        "frame_duration_ms_p50": 1.2820219998247921,
-        "frame_duration_ms_p95": 2.866978000081144,
-        "frame_duration_ms_p99": 3.7342123400187113,
-        "pre_tool_hook_duration_ms_count": 106,
+        "frame_duration_ms_count": 38792,
+        "frame_duration_ms_min": 0.056576000002678484,
+        "frame_duration_ms_max": 22.019245999865234,
+        "frame_duration_ms_avg": 1.3287118856207378,
+        "frame_duration_ms_p50": 1.1163069996982813,
+        "frame_duration_ms_p95": 2.5591482498450198,
+        "frame_duration_ms_p99": 3.212075199922546,
+        "pre_tool_hook_duration_ms_count": 107,
         "pre_tool_hook_duration_ms_min": 0,
-        "pre_tool_hook_duration_ms_max": 6,
-        "pre_tool_hook_duration_ms_avg": 0.39622641509433965,
+        "pre_tool_hook_duration_ms_max": 1,
+        "pre_tool_hook_duration_ms_avg": 0.18691588785046728,
         "pre_tool_hook_duration_ms_p50": 0,
         "pre_tool_hook_duration_ms_p95": 1,
-        "pre_tool_hook_duration_ms_p99": 4.950000000000003
+        "pre_tool_hook_duration_ms_p99": 1
       }
     }
   },
   "userID": "78e990289fdf52d4ebda3ab870295b4454e8e1cce222f2a05f1f90deb12f3936",
-  "opus48LaunchSeenCount": 4,
+  "opus48LaunchSeenCount": 5,
   "showSpinnerTree": false
 }
