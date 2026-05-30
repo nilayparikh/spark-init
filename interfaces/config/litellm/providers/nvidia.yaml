@@ -87,9 +87,3 @@ model_list:
       supports_native_streaming: true
       supports_vision: true
       supported_openai_params: *nvidia_supported_openai_params
-
-litellm_settings:
-  drop_params: true
-  modify_params: true
-  set_completed_by_on_stream_chunks: true
-  require_auth_for_metrics_endpoint: false

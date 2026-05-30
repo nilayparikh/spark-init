@@ -3,7 +3,8 @@
 # YAML anchors stay local to each file because aliases do not span files.
 include:
   - providers/azure-foundry.yaml
-  - providers/core.yaml
+  - providers/dgx-spark.yaml
+  - providers/opencode-zen.yaml
   - providers/nvidia.yaml
   - providers/deepseek.yaml
 
@@ -15,6 +16,10 @@ general_settings:
 router_settings:
   num_retries: 5
   retry_after: 0
+  model_group_alias:
+    ".INIT/Ultra": "OpenCodeZen/QWEN3.6-PLUS"
+    ".INIT/Pro": "DGX/Qwen3.6-27B"
+    ".INIT/Flash": "DGX/Qwen3.6-35B-A3B"
   retry_policy:
     AuthenticationErrorRetries: 0
     TimeoutErrorRetries: 5

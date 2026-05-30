@@ -28,12 +28,12 @@ cp .env.example .env
 
 Edit `.env` with your local settings. Critical variables to update:
 
-| Variable | What to Change |
-|----------|----------------|
-| `LLAMA_QWEN_3_6_27B_GGUF_MODEL_PATH` | Path to your GGUF model file on disk |
-| `LLAMA_QWEN_3_6_27B_BINARY_PATH` | Path to compiled `llama-server` binary |
-| `LITELLM_MASTER_KEY` | Your preferred API key |
-| `GRAFANA_ADMIN_PASSWORD` | A strong password for Grafana |
+| Variable                             | What to Change                         |
+| ------------------------------------ | -------------------------------------- |
+| `LLAMA_QWEN_3_6_27B_GGUF_MODEL_PATH` | Path to your GGUF model file on disk   |
+| `LLAMA_QWEN_3_6_27B_BINARY_PATH`     | Path to compiled `llama-server` binary |
+| `LITELLM_MASTER_KEY`                 | Your preferred API key                 |
+| `GRAFANA_ADMIN_PASSWORD`             | A strong password for Grafana          |
 
 ## Start the Stack
 
@@ -78,7 +78,7 @@ Grafana re-reads provisioned dashboards on startup.
 
 ### Iterating on LiteLLM Configuration
 
-After editing `interfaces/config/litellm/litellm-config.yaml`:
+After editing `interfaces/config/litellm/config.yaml`:
 
 ```bash
 docker compose restart litellm
@@ -155,6 +155,7 @@ docker compose up -d
 ```
 
 > **★ Insight**
+>
 > - Always run `git submodule update --init --recursive` after cloning — the llama.cpp submodule is required for the inference backend.
 > - The Dev Container uses `--network=host` so Alloy can discover containers via the Docker socket; this is simpler than managing Docker networks in a nested container.
 > - `docker compose down -v` destroys all volumes including PostgreSQL data and Grafana dashboards. Use selectively.

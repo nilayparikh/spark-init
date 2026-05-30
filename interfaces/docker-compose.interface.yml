@@ -11,7 +11,7 @@ services:
       "init.profile_name": "interface"
     command:
       - --config
-      - /app/litellm-config/litellm-config.yaml
+      - /app/litellm-config/config.yaml
       - --port
       - "${LITELLM_PORT:-4000}"
       - --host
@@ -26,12 +26,12 @@ services:
       NO_DOCS: ${LITELLM_NO_DOCS:-True}
       NO_REDOC: ${LITELLM_NO_REDOC:-True}
       DATABASE_URL: ${INTERFACE_DATABASE_URL:-postgresql://litellm_interface:litellm_interface_local@postgres:5432/litellm_interface}
-      PRO_BASE_URL: ${PRO_BASE_URL:-${INTERFACE_QWEN_3_6_27B_BASE_URL:-http://host.docker.internal:8000/v1}}
-      PRO_API_KEY: ${PRO_API_KEY:-${INTERFACE_QWEN_3_6_27B_API_KEY:-sk-dummy}}
-      PRO_SERVING_MODEL: ${PRO_MODEL:-${INTERFACE_QWEN_3_6_27B_MODEL:-openai/qwen3.6_27b}}
-      FLASH_BASE_URL: ${FLASH_BASE_URL:-${INTERFACE_QWEN_3_6_35B_A3B_BASE_URL:-http://host.docker.internal:8001/v1}}
-      FLASH_API_KEY: ${FLASH_API_KEY:-${INTERFACE_QWEN_3_6_35B_A3B_API_KEY:-sk-dummy}}
-      FLASH_SERVING_MODEL: ${FLASH_MODEL:-${INTERFACE_QWEN_3_6_35B_A3B_MODEL:-openai/qwen3.6_35b_a3b}}
+      DGX_SPARK_M_BASE_URL: ${DGX_SPARK_M_BASE_URL:-${PRO_BASE_URL:-${INTERFACE_QWEN_3_6_27B_BASE_URL:-http://host.docker.internal:8000/v1}}}
+      DGX_SPARK_M_API_KEY: ${DGX_SPARK_M_API_KEY:-${PRO_API_KEY:-${INTERFACE_QWEN_3_6_27B_API_KEY:-sk-dummy}}}
+      DGX_SPARK_M_SERVING_MODEL: ${DGX_SPARK_M_MODEL:-${PRO_MODEL:-${INTERFACE_QWEN_3_6_27B_MODEL:-openai/qwen3.6_27b}}}
+      DGX_SPARK_S_BASE_URL: ${DGX_SPARK_S_BASE_URL:-${FLASH_BASE_URL:-${INTERFACE_QWEN_3_6_35B_A3B_BASE_URL:-http://host.docker.internal:8001/v1}}}
+      DGX_SPARK_S_API_KEY: ${DGX_SPARK_S_API_KEY:-${FLASH_API_KEY:-${INTERFACE_QWEN_3_6_35B_A3B_API_KEY:-sk-dummy}}}
+      DGX_SPARK_S_SERVING_MODEL: ${DGX_SPARK_S_MODEL:-${FLASH_MODEL:-${INTERFACE_QWEN_3_6_35B_A3B_MODEL:-openai/qwen3.6_35b_a3b}}}
       MICROSOFT_FOUNDRY_API_BASE: ${MICROSOFT_FOUNDRY_API_BASE:-https://tuts.services.ai.azure.com/openai/v1}
       MICROSOFT_FOUNDRY_API_KEY: ${MICROSOFT_FOUNDRY_API_KEY:-}
       AZURE_ORCHESTRATOR_API_BASE: ${AZURE_ORCHESTRATOR_API_BASE:-${MICROSOFT_FOUNDRY_API_BASE:-https://tuts.services.ai.azure.com/openai/v1}}

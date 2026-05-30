@@ -8,11 +8,11 @@ The `.init` stack exposes OpenAI-compatible REST endpoints through two layers: t
 
 The LiteLLM proxy is the primary entry point. It handles authentication, routing, and observability.
 
-| Endpoint | URL | Auth |
-|----------|-----|------|
-| Chat completions | `POST http://localhost:4000/v1/chat/completions` | Bearer token |
-| List models | `GET http://localhost:4000/v1/models` | Bearer token |
-| Metrics | `GET http://localhost:4000/metrics/` | None (internal) |
+| Endpoint         | URL                                              | Auth            |
+| ---------------- | ------------------------------------------------ | --------------- |
+| Chat completions | `POST http://localhost:4000/v1/chat/completions` | Bearer token    |
+| List models      | `GET http://localhost:4000/v1/models`            | Bearer token    |
+| Metrics          | `GET http://localhost:4000/metrics/`             | None (internal) |
 
 ```bash
 # Chat completion
@@ -37,11 +37,11 @@ curl -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
 
 The llama.cpp backend is accessible directly, bypassing the proxy. Use this for benchmarking or when you don't need routing.
 
-| Endpoint | URL | Auth |
-|----------|-----|------|
+| Endpoint         | URL                                              | Auth |
+| ---------------- | ------------------------------------------------ | ---- |
 | Chat completions | `POST http://localhost:8000/v1/chat/completions` | None |
-| List models | `GET http://localhost:8000/v1/models` | None |
-| Metrics | `GET http://localhost:8000/v1/metrics` | None |
+| List models      | `GET http://localhost:8000/v1/models`            | None |
+| Metrics          | `GET http://localhost:8000/v1/metrics`           | None |
 
 ```bash
 # Direct chat completion (no auth)
@@ -64,8 +64,8 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 {
   "model": "openai/DGX/Qwen3.6 27B/SWE",
   "messages": [
-    {"role": "system", "content": "You are a helpful assistant."},
-    {"role": "user", "content": "Explain quantum computing."}
+    { "role": "system", "content": "You are a helpful assistant." },
+    { "role": "user", "content": "Explain quantum computing." }
   ],
   "temperature": 0.7,
   "top_p": 0.95,
@@ -74,16 +74,16 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 }
 ```
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `model` | string | required | Model identifier (see naming conventions below) |
-| `messages` | array | required | Chat history with `role` and `content` |
-| `temperature` | float | 0.8 | Sampling temperature (0–1) |
-| `top_p` | float | 0.95 | Nucleus sampling threshold |
-| `max_tokens` | integer | ∞ | Maximum tokens to generate |
-| `stream` | boolean | false | Enable SSE streaming |
-| `frequency_penalty` | float | 0 | Penalty for repeated tokens |
-| `presence_penalty` | float | 0 | Penalty for new tokens |
+| Parameter           | Type    | Default  | Description                                     |
+| ------------------- | ------- | -------- | ----------------------------------------------- |
+| `model`             | string  | required | Model identifier (see naming conventions below) |
+| `messages`          | array   | required | Chat history with `role` and `content`          |
+| `temperature`       | float   | 0.8      | Sampling temperature (0–1)                      |
+| `top_p`             | float   | 0.95     | Nucleus sampling threshold                      |
+| `max_tokens`        | integer | ∞        | Maximum tokens to generate                      |
+| `stream`            | boolean | false    | Enable SSE streaming                            |
+| `frequency_penalty` | float   | 0        | Penalty for repeated tokens                     |
+| `presence_penalty`  | float   | 0        | Penalty for new tokens                          |
 
 ### Streaming
 
@@ -222,12 +222,13 @@ curl -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
 
 The proxy adds capabilities beyond the base OpenAI API:
 
-- **Multi-provider routing** — Configure multiple backends in `litellm-config.yaml`; LiteLLM routes based on model name
+- **Multi-provider routing** — Configure multiple backends in `config.yaml`; LiteLLM routes based on model name
 - **Retry policy** — Automatic retries on timeout and rate-limit errors (5 retries by default)
 - **Usage logging** — Token usage stored in PostgreSQL for cost tracking
 - **Prometheus metrics** — Request counts, latency, and token usage at `/metrics/`
 
 > **★ Insight**
+>
 > - Always route through LiteLLM (`:4000`) in production — it provides auth, retries, and observability that llama.cpp lacks.
 > - Use direct llama.cpp (`:8000`) only for benchmarking or internal tooling where auth overhead is undesirable.
 > - The `openai/` and `anthropic/` model prefixes are routing conventions — they map to provider configs under `interfaces/config/litellm/providers/`.

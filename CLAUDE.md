@@ -10,11 +10,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Three layers, each independently composable through `COMPOSE_PROFILES`:
 
-| Layer | Directory | Services | Profile(s) |
-|-------|-----------|----------|------------|
-| **Data** | `data/` | PostgreSQL | `data` |
-| **Observability** | `observability/` | Mimir, Loki, Alloy, Grafana, DCGM, cAdvisor | `obs` |
-| **Interfaces** | `interfaces/` | LiteLLM proxy, llama.cpp backend | `interface`, `llama-qwen-3-6-27b` |
+| Layer             | Directory        | Services                                    | Profile(s)                        |
+| ----------------- | ---------------- | ------------------------------------------- | --------------------------------- |
+| **Data**          | `data/`          | PostgreSQL                                  | `data`                            |
+| **Observability** | `observability/` | Mimir, Loki, Alloy, Grafana, DCGM, cAdvisor | `obs`                             |
+| **Interfaces**    | `interfaces/`    | LiteLLM proxy, llama.cpp backend            | `interface`, `llama-qwen-3-6-27b` |
 
 Data flow: clients → LiteLLM proxy (`:4000`) → llama.cpp (`:8000`) → GPU. Alloy scrapes all services and streams to Mimir/Loki for Grafana visualization. All services share the `init_default` Docker network.
 
@@ -64,15 +64,16 @@ COMPOSE_PROFILES=data,interface,llama-qwen-3-6-27b
 
 ### Endpoints
 
-| Service | URL | Auth |
-|---------|-----|------|
-| LiteLLM proxy | `http://localhost:4000` | `LITELLM_MASTER_KEY` |
-| llama.cpp | `http://localhost:8000/v1` | None |
-| Grafana | `http://<host>:3000` | `GRAFANA_ADMIN_USER`/`GRAFANA_ADMIN_PASSWORD` |
+| Service       | URL                        | Auth                                          |
+| ------------- | -------------------------- | --------------------------------------------- |
+| LiteLLM proxy | `http://localhost:4000`    | `LITELLM_MASTER_KEY`                          |
+| llama.cpp     | `http://localhost:8000/v1` | None                                          |
+| Grafana       | `http://<host>:3000`       | `GRAFANA_ADMIN_USER`/`GRAFANA_ADMIN_PASSWORD` |
 
 ### Environment
 
 Copy `.env.example` to `.env` and update secrets and paths. Critical settings:
+
 - `LLAMA_QWEN_3_6_27B_GGUF_MODEL_PATH` — must point to a valid GGUF model file on disk
 - `LLAMA_QWEN_3_6_27B_BINARY_PATH` — path to compiled llama-server binary
 - `LITELLM_MASTER_KEY` — auth key for the proxy
@@ -95,6 +96,7 @@ find scripts/ -name '*.py' -print0 | xargs -0 -I{} python3 -m py_compile {}
 ```
 
 GitHub Actions (`.github/workflows/`):
+
 - `lint.yml` — YAML, ShellCheck, Python syntax on push/PR to main
 - `docker-build.yml` — Build and push `llama-cpp-dgx` image to GHCR on push to main/tags
 - `deploy-docs.yml` — Deploy MkDocs site
@@ -112,23 +114,24 @@ The image is also built by CI when `interfaces/dockerfiles/` changes.
 ## `claude-code.sh`
 
 Launches an isolated Claude Code container routed through the local LiteLLM proxy. It:
+
 1. Parses `.env` for `LITELLM_MASTER_KEY`
 2. Builds the dev container image from `.devcontainer/Dockerfile` if needed
 3. Runs Claude Code with `ANTHROPIC_BASE_URL` pointing to the LiteLLM proxy at `http://barsana.local:4000`
 
 ## Key Files to Know
 
-| File | Purpose |
-|------|---------|
-| `.env.example` | Template for local `.env` — all configurable variables |
-| `docker-compose.yml` | Root compose — includes all sub-compose files |
-| `interfaces/config/litellm/litellm-config.yaml` | LiteLLM provider routing config |
-| `interfaces/config/qwen3.6/chat_template.jinja` | Chat template for Qwen 3.6 |
-| `observability/config/config.alloy` | Alloy collector configuration |
-| `observability/config/grafana/provisioning/` | Grafana dashboards & data sources |
-| `data/config/postgres-init/` | Database bootstrap scripts |
-| `scripts/` | GPU smoke tests, harness scripts |
-| `docs/` | MkDocs documentation site |
+| File                                            | Purpose                                                |
+| ----------------------------------------------- | ------------------------------------------------------ |
+| `.env.example`                                  | Template for local `.env` — all configurable variables |
+| `docker-compose.yml`                            | Root compose — includes all sub-compose files          |
+| `interfaces/config/litellm/config.yaml`         | LiteLLM provider routing config                        |
+| `interfaces/config/qwen3.6/chat_template.jinja` | Chat template for Qwen 3.6                             |
+| `observability/config/config.alloy`             | Alloy collector configuration                          |
+| `observability/config/grafana/provisioning/`    | Grafana dashboards & data sources                      |
+| `data/config/postgres-init/`                    | Database bootstrap scripts                             |
+| `scripts/`                                      | GPU smoke tests, harness scripts                       |
+| `docs/`                                         | MkDocs documentation site                              |
 
 ## Documentation
 

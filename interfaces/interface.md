@@ -37,7 +37,7 @@ Important behavior:
 
 - `llama-qwen-3-6-27b` and `llama-qwen-3-6-35b-a3b` use separate host ports (8000 and 8001) and can run simultaneously.
 - LiteLLM is configured to proxy the active backends through `INTERFACE_QWEN_3_6_27B_BASE_URL` and `INTERFACE_QWEN_3_6_35B_A3B_BASE_URL`.
-- LiteLLM now loads the root catalog at `interfaces/config/litellm/litellm-config.yaml` plus provider fragments under `interfaces/config/litellm/providers/`.
+- LiteLLM now loads the root catalog at `interfaces/config/litellm/config.yaml` plus provider fragments under `interfaces/config/litellm/providers/`.
 - The top-level root compose file is the supported operator entrypoint for this stack.
 - All documentation lives under `docs/` in the repository root.
 

@@ -4,13 +4,13 @@ This page documents the custom configuration files that drive the `.init` stack.
 
 ## LiteLLM Configuration
 
-The LiteLLM proxy uses a YAML configuration file mounted at `/app/litellm-config/litellm-config.yaml`.
+The LiteLLM proxy uses a YAML configuration file mounted at `/app/litellm-config/config.yaml`.
 
 ### Structure
 
 ```
 interfaces/config/litellm/
-├── litellm-config.yaml          # Root config — includes provider fragments
+├── config.yaml                  # Root config — includes provider fragments
 └── providers/                   # Per-provider routing fragments
     ├── azure-foundry.yaml       # Azure Foundry models (Kimi K2.6, DeepSeek V4 Flash)
     ├── dgx.yaml                 # Local DGX models (Qwen 3.6 27B, 35B A3B)
@@ -30,7 +30,7 @@ Anthropic-compatible aliases (`anthropic/...` and `claude-*`) are published alon
 
 1. Create a new YAML fragment in `interfaces/config/litellm/providers/`
 2. Add the provider's models and routing rules
-3. Include the fragment in `litellm-config.yaml`
+3. Include the fragment in `config.yaml`
 4. Restart the LiteLLM container: `docker compose restart litellm`
 
 ## Chat Templates

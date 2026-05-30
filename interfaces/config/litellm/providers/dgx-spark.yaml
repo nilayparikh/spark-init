@@ -1,12 +1,12 @@
 ---
 model_list:
   # Base Profile: Centralised Configuration Block
-  - model_name: DGX/PRO
+  - model_name: DGX/Qwen3.6-27B
     litellm_params:
       &dgx_qwen_params # Force LiteLLM to translate Claude Code's Anthropic payload into OpenAI structure
-      model: openai/os.environ/PRO_SERVING_MODEL
-      api_base: os.environ/PRO_BASE_URL
-      api_key: os.environ/PRO_API_KEY
+      model: openai/os.environ/DGX_SPARK_M_SERVING_MODEL
+      api_base: os.environ/DGX_SPARK_M_BASE_URL
+      api_key: os.environ/DGX_SPARK_M_API_KEY
       timeout: 300
 
       # Advanced Reasoning & Token Configurations
@@ -30,7 +30,7 @@ model_list:
           preserve_thinking: false
 
     model_info: &dgx_qwen_model_info
-      id: "dgx-pro"
+      id: "dgx-qwen3.6-27b"
       db_model: false
       supports_reasoning: true
       mode: chat
@@ -54,12 +54,12 @@ model_list:
         - top_p
         - stop
 
-  - model_name: DGX/FLASH
+  - model_name: DGX/Qwen3.6-35B-A3B
     litellm_params:
       <<: *dgx_qwen_params
-      model: openai/os.environ/FLASH_SERVING_MODEL
-      api_base: os.environ/FLASH_BASE_URL
-      api_key: os.environ/FLASH_API_KEY
+      model: openai/os.environ/DGX_SPARK_S_SERVING_MODEL
+      api_base: os.environ/DGX_SPARK_S_BASE_URL
+      api_key: os.environ/DGX_SPARK_S_API_KEY
       timeout: 300
 
       max_tokens: 262144
@@ -67,14 +67,8 @@ model_list:
 
     model_info:
       <<: *dgx_qwen_model_info
-      id: "dgx-flash"
+      id: "dgx-qwen3.6-35b-a3b"
       context_window: 262144
       max_tokens: 262144
       max_input_tokens: 245760
       supports_vision: true
-
-litellm_settings:
-  drop_params: true
-  modify_params: true
-  set_completed_by_on_stream_chunks: true
-  require_auth_for_metrics_endpoint: false
