@@ -27,6 +27,13 @@ else
     echo "⚠️ [ENV] No .env file found at ${ENV_FILE}. Falling back to default values."
 fi
 
+# Ensure Hugging Face and GitHub auth tokens are available in the container.
+HF_TOKEN="${HF_TOKEN:-${HUGGINGFACE_TOKEN:-}}"
+HUGGINGFACE_TOKEN="${HUGGINGFACE_TOKEN:-${HF_TOKEN:-}}"
+GH_TOKEN="${GH_TOKEN:-${GITHUB_PERSONAL_ACCESS_TOKEN:-}}"
+GITHUB_PERSONAL_ACCESS_TOKEN="${GITHUB_PERSONAL_ACCESS_TOKEN:-${GH_TOKEN:-}}"
+
+# Configure environment and model routing for the container.
 LITELLM_MASTER_KEY="${LITELLM_MASTER_KEY:-your-default-master-key}"
 MODEL_BASE_URL="http://barsana.local:4000"
 
@@ -86,6 +93,9 @@ DOCKER_OPTS=(
   # LiteLLM routing parameters
   -e ANTHROPIC_BASE_URL="${MODEL_BASE_URL}"
   -e ANTHROPIC_AUTH_TOKEN="${LITELLM_MASTER_KEY}"
+  -e HF_TOKEN="${HF_TOKEN}"
+  -e GH_TOKEN="${GH_TOKEN}"
+  -e GITHUB_PERSONAL_ACCESS_TOKEN="${GITHUB_PERSONAL_ACCESS_TOKEN}"
   -e CLAUDE_CODE_ATTRIBUTION_HEADER="0"
   -e CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1"
 
@@ -94,6 +104,7 @@ DOCKER_OPTS=(
   -e CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL="1"
   -e CLAUDE_CODE_AUTO_CONNECT_IDE="false"
   -e CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL="1"
+  -e CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS="1"
   -e DISABLE_INSTALLATION_CHECKS="1"
 
   # System fallbacks
@@ -105,3 +116,4 @@ DOCKER_OPTS=(
 
 # Launch standard execution cleanly without syntax crashes
 docker run "${DOCKER_OPTS[@]}" "${TARGET_IMAGE}" claude --dangerously-skip-permissions
+
