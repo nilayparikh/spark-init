@@ -63,7 +63,17 @@ RUN set -eux; \
 # 6. Install Claude Code globally using npm
 RUN npm install -g @anthropic-ai/claude-code
 
-# 7. Create a non-root devcontainer user for the mounted workspace
+# 7. Install Trivy security scanner (official Aqua Security repository)
+RUN apt-get update && apt-get install -y --no-install-recommends wget gnupg \
+    && wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | tee /usr/share/keyrings/trivy.gpg > /dev/null \
+    && echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" > /etc/apt/sources.list.d/trivy.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends trivy \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN trivy plugin install mcp
+
+# 9. Create a non-root devcontainer user for the mounted workspace
 ARG USERNAME=vscode
 ARG USER_UID=1000
 ARG USER_GID=1000
@@ -83,7 +93,7 @@ RUN set -eux; \
     chown "${USER_UID}:${USER_GID}" /workspace; \
     rm -rf /var/lib/apt/lists/*
 
-# 8. Inject optimization environment variables for Custom Models & Docker isolation
+# 10. Inject optimization environment variables for Custom Models & Docker isolation
 ENV CLAUDE_CODE_ATTRIBUTION_HEADER="0" \
     IS_SANDBOX="1" \
     CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL="1" \
@@ -92,13 +102,13 @@ ENV CLAUDE_CODE_ATTRIBUTION_HEADER="0" \
     DISABLE_INSTALLATION_CHECKS="1" \
     HOME="/home/${USERNAME}"
 
-# 7. Set up the active workspace
+# 11. Set up the active workspace
 WORKDIR /workspace
 
-# 8. Switch to the devcontainer user
+# 12. Switch to the devcontainer user
 USER ${USERNAME}
 
-# 9. Add OCI-compliant metadata labels
+# 13. Add OCI-compliant metadata labels
 LABEL org.opencontainers.image.title="claude-code" \
       org.opencontainers.image.description="Claude Code dev container with NVIDIA PyTorch for DGX Spark" \
       org.opencontainers.image.url="https://github.com/nilayparikh/spark-init" \

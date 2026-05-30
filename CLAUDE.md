@@ -98,6 +98,25 @@ Critical settings:
 - `LLAMA_QWEN_3_6_27B_GGUF_MODEL_PATH` — must point to a valid GGUF model file on disk
 - `LITELLM_MASTER_KEY` — auth key for the proxy
 
+### Secret Protection
+
+A single Trivy-based hook replaces the old multi-hook system:
+
+| Component | What it does |
+|-----------|-------------|
+| **PostToolUse hook** | `.claude/hooks/trivy-scan.sh` — scans every written file for secrets and misconfigurations using Trivy (scanners: `secret`, `misconfig`; severity: CRITICAL, HIGH, MEDIUM) |
+| **CI workflow** | `.github/workflows/trivy.yml` — full repo scan on push/PR + daily scheduled scan |
+| **Custom rules** | `trivy-secret.yaml` — project-specific patterns (OpenAI keys, DB connection strings) |
+| **Sync check** | `.claude/hooks/compare-env.sh` — run `! .claude/hooks/compare-env.sh` at session end to compare `.env` vs `.env.example` key names |
+
+**Working with secrets:**
+
+- **Always** use `.env.example` for template changes (never `.env` directly)
+- **Never** hardcode a secret in source code — reference it via an environment variable
+- **At session end**, run `! .claude/hooks/compare-env.sh` to check if `.env` needs updating
+- **Secret values in .env** can only be checked by the user directly (`grep VAR .env`)
+- **False positives** → add allow-rules to `trivy-secret.yaml`
+
 ## Linting & CI
 
 No test suite — this is an infrastructure repository. CI runs three lint jobs:
@@ -118,6 +137,7 @@ find scripts/ -name '*.py' -print0 | xargs -0 -I{} python3 -m py_compile {}
 GitHub Actions (`.github/workflows/`):
 
 - `lint.yml` — YAML, ShellCheck, Python syntax on push/PR to main
+- `trivy.yml` — Full repo secret + misconfig scan on push/PR + daily schedule
 - `docker-build-llama-cpp-dgx.yml` — Build and push `llama-cpp-dgx` image to GHCR on push to main/tags
 - `docker-build-claude-code.yml` — Build and push `claude-code` image to GHCR on push to main/tags
 - `deploy-docs.yml` — Deploy MkDocs site
@@ -159,6 +179,9 @@ This indexed catalog covers all source files, configuration, and documentation. 
 | `claude-code.sh` | Launch Claude Code container routed through LiteLLM proxy |
 | `mkdocs.yml` | MkDocs site configuration (Material theme) |
 | `CLAUDE.md` | This file — guidance for AI agents |
+| `.claude/hooks/` | Trivy-based security scanning hooks |
+| `trivy.yaml` | Trivy scan strategy reference |
+| `trivy-secret.yaml` | Custom Trivy secret rules (OpenAI keys, DB strings) |
 
 ### Data Layer (`data/`)
 
@@ -235,6 +258,7 @@ This indexed catalog covers all source files, configuration, and documentation. 
 | File | Purpose |
 | --------------------------------------------------------- | --------------------------------------------------------- |
 | `.github/workflows/lint.yml` | YAML lint, ShellCheck, Python syntax on push/PR |
+| `.github/workflows/trivy.yml` | Full repo secret + misconfig scan on push/PR + daily |
 | `.github/workflows/docker-build-llama-cpp-dgx.yml` | Build `llama-cpp-dgx` image and push to GHCR |
 | `.github/workflows/docker-build-claude-code.yml` | Build `claude-code` image and push to GHCR |
 | `.github/workflows/deploy-docs.yml` | Deploy MkDocs site to GitHub Pages |

@@ -37,6 +37,12 @@ GITHUB_PERSONAL_ACCESS_TOKEN="${GITHUB_PERSONAL_ACCESS_TOKEN:-${GH_TOKEN:-}}"
 LITELLM_MASTER_KEY="${LITELLM_MASTER_KEY:-your-default-master-key}"
 MODEL_BASE_URL="http://barsana.local:4000"
 
+# Capture extra arguments that should be forwarded into the Claude CLI.
+CLAUDE_ARGS=("$@")
+if [ "${#CLAUDE_ARGS[@]}" -gt 0 ]; then
+    echo "📥 [ARGS] Forwarding additional Claude flags: ${CLAUDE_ARGS[*]}"
+fi
+
 # ==========================================
 # STEP 2: CONDITIONALLY BUILD THE MULTI-TAG IMAGE
 # ==========================================
@@ -120,6 +126,10 @@ DOCKER_OPTS=(
   -e ANTHROPIC_DEFAULT_OPUS_MODEL_NAME=".INIT/Ultra"
   -e ANTHROPIC_DEFAULT_OPUS_MODEL_DESCRIPTION="OpenCodeZen/QWEN3.6-PLUS via LiteLLM"
 
+#   -e ANTHROPIC_DEFAULT_OPUS_MODEL="OpenCodeZen/DEEPSEEK-V4-FLASH-FREE"
+#   -e ANTHROPIC_DEFAULT_OPUS_MODEL_NAME="OpenCodeZen/DEEPSEEK-V4-FLASH-FREE"
+#   -e ANTHROPIC_DEFAULT_OPUS_MODEL_DESCRIPTION="OpenCodeZen/DEEPSEEK-V4-FLASH-FREE via LiteLLM"
+
   -e ANTHROPIC_DEFAULT_SONNET_MODEL=".INIT/Pro"
   -e ANTHROPIC_DEFAULT_SONNET_MODEL_NAME=".INIT/Pro"
   -e ANTHROPIC_DEFAULT_SONNET_MODEL_DESCRIPTION="DGX/Qwen3.6-27B via LiteLLM"
@@ -130,5 +140,5 @@ DOCKER_OPTS=(
 )
 
 # Launch standard execution cleanly without syntax crashes
-docker run "${DOCKER_OPTS[@]}" "${TARGET_IMAGE}" claude --dangerously-skip-permissions
+docker run "${DOCKER_OPTS[@]}" "${TARGET_IMAGE}" claude --dangerously-skip-permissions "${CLAUDE_ARGS[@]}"
 

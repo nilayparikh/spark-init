@@ -8,6 +8,13 @@
         "@modelcontextprotocol/server-docker"
       ],
       "env": {}
+    },
+    "trivy": {
+      "command": "trivy",
+      "args": [
+        "mcp",
+        "server"
+      ]
     }
   }
 }

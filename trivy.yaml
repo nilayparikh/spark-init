@@ -1,0 +1,26 @@
+# trivy.yaml — Scan strategy reference for the .init project
+#
+# This file documents the scanning strategy. The actual Trivy invocations
+# use CLI flags (not this file as --config). See:
+#   - .claude/hooks/trivy-scan.sh   (per-file hook on Edit/Write)
+#   - .github/workflows/trivy.yml   (full repo CI scan)
+#
+# ─── Strategy ───────────────────────────────────────────────────────
+#
+# Scanners:    secret, misconfig
+# Severity:    CRITICAL, HIGH, MEDIUM
+#
+# misconfig scanners:
+#   - dockerfile        (base images, root users, cache states)
+#   - terraform         (future-proof for IaC)
+#   - kubernetes        (catches issues in standard YAML files)
+#   - include-non-iac-files: true
+#
+# secret skip-files:
+#   - node_modules/**
+#   - .git/**
+#
+# Custom rules (loaded via --secret-config trivy-secret.yaml):
+#   - OpenAI/LiteLLM API keys (sk-/pk- prefixes)
+#   - Database connection strings with credentials
+# ────────────────────────────────────────────────────────────────────
