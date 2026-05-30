@@ -1,6 +1,6 @@
 ---
 model_list:
-  # Base Profile: Centralised Configuration Block
+  # Base profile definition for DGX models.
   - model_name: DGX/Qwen3.6-27B
     litellm_params:
       &dgx_qwen_params # Force LiteLLM to translate Claude Code's Anthropic payload into OpenAI structure
@@ -71,4 +71,5 @@ model_list:
       context_window: 262144
       max_tokens: 262144
       max_input_tokens: 245760
+      max_output_tokens: 16384
       supports_vision: true
