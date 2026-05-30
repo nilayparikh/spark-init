@@ -81,11 +81,9 @@ dist/
 .claude/history.jsonl
 .claude/shell-snapshots
 .claude/.claude.json
-.claude/settings.json`
+.claude/settings.json
 
 # Miscellaneous
 .local
 .npm
 .bash_history
-
-.claude/settings.json`
