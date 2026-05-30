@@ -49,7 +49,7 @@
     "security-guidance@claude-plugins-official": true,
     "ralph-loop@claude-plugins-official": true,
     "claude-code-setup@claude-plugins-official": true,
-    "huggingface-skills@claude-plugins-official": true
+    "huggingface-skills@claude-plugins-official": false
   },
   "extraKnownMarketplaces": {
     "claude-plugins-official": {

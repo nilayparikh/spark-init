@@ -37,6 +37,12 @@
       "skillPath": "skills/github-actions-docs/SKILL.md",
       "computedHash": "e9ac24e79715ef3060bd4ae376052f8d863b830604e69cb513b39764bf47ee53"
     },
+    "hf-cli": {
+      "source": "huggingface/skills",
+      "sourceType": "github",
+      "skillPath": "skills/hf-cli/SKILL.md",
+      "computedHash": "f447645b19efbdd7bd6cfad079ff242a4700a0ef4e84cc5fd8a1de85504b5274"
+    },
     "running-claude-code-via-litellm-copilot": {
       "source": "xixu-me/skills",
       "sourceType": "github",

@@ -19,7 +19,7 @@
     "subagent-fanout-nudge": 3,
     "loop-command-nudge": 3
   },
-  "promptQueueUseCount": 1,
+  "promptQueueUseCount": 3,
   "firstStartTime": "2026-05-29T21:50:34.677Z",
   "opusProMigrationComplete": true,
   "sonnet1m45MigrationComplete": true,
@@ -104,5 +104,11 @@
   },
   "userID": "78e990289fdf52d4ebda3ab870295b4454e8e1cce222f2a05f1f90deb12f3936",
   "opus48LaunchSeenCount": 5,
-  "showSpinnerTree": false
+  "showSpinnerTree": false,
+  "skillUsage": {
+    "claude-md-management:revise-claude-md": {
+      "usageCount": 1,
+      "lastUsedAt": 1780108705858
+    }
+  }
 }
