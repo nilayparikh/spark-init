@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-FROM nvcr.io/nvidia/cuda:13.1.2-cudnn-devel-ubuntu24.04 AS builder
+FROM nvcr.io/nvidia/cuda:13.2.1-cudnn-devel-ubuntu24.04 AS builder
 
 ARG LLAMA_CPP_TAG=master
 ENV DEBIAN_FRONTEND=noninteractive
@@ -44,7 +44,7 @@ RUN mkdir build && cd build && \
         bin/libmtmd*.so* \
         /opt/llama-runtime/
 
-FROM nvcr.io/nvidia/cuda:13.1.2-cudnn-runtime-ubuntu24.04 AS runtime
+FROM nvcr.io/nvidia/cuda:13.2.1-cudnn-runtime-ubuntu24.04 AS runtime
 
 ENV DEBIAN_FRONTEND=noninteractive \
     LD_LIBRARY_PATH=/opt/llama-runtime:${LD_LIBRARY_PATH:-}
