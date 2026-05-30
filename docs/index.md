@@ -8,11 +8,11 @@
 
 The platform is organized into three independent layers, each defined in its own Docker Compose file and included by the root `docker-compose.yml`:
 
-| Layer             | Directory                                                                                  | Services                                                                               |
-| ----------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
-| **Data**          | `data/`                                                                                    | PostgreSQL — shared persistence for LiteLLM, Grafana, and any downstream integrations. |
-| **Observability** | `observability/` Alloy, Grafana, Mimir (metrics), Loki (logs), and GPU telemetry via DCGM. |
-| **Interfaces**    | `interfaces/` LiteLLM proxy with multi-provider routing, llama.cpp inference backend.      |
+| Layer             | Directory          | Services                                                                                         |
+|-------------------|--------------------|--------------------------------------------------------------------------------------------------|
+| **Data**          | `data/`            | PostgreSQL — shared persistence for LiteLLM, Grafana, and any downstream integrations.           |
+| **Observability** | `observability/`   | Alloy, Grafana, Mimir (metrics), Loki (logs), and GPU telemetry via DCGM.                        |
+| **Interfaces**    | `interfaces/`      | LiteLLM proxy with multi-provider routing, llama.cpp inference backend.                          |
 
 Each layer is activated independently through Docker Compose profiles, so you can run just the data + observability stack for monitoring, or add one or more inference backends on top without touching other services.
 
@@ -30,7 +30,7 @@ Each layer is activated independently through Docker Compose profiles, so you ca
 ```bash
 # Clone and enter the repository
 git clone https://github.com/nilayparikh/init-stack.git
-cd .init
+cd init-stack
 
 # Configure environment and secrets
 cp .env.example .env
@@ -75,9 +75,10 @@ Verify with `docker compose ps` and check the health endpoints listed in the [Qu
 │   └── config/                     # Collector and dashboard configs
 │
 ├── interfaces/                     # Interfaces layer
-│   ├── docker-compose.interface.yml  # LiteLLM, llama.cpp, vLLM services
+│   ├── docker-compose.interface.yml  # LiteLLM, llama.cpp services
 │   ├── config/litellm/             # Proxy model catalog and routing
-│   └── vllm/                       # vLLM launch scripts and mods
+│   ├── config/qwen3.6/             # Chat templates for Qwen 3.6
+│   └── dockerfiles/                # Custom Docker images (llama.cpp CUDA build)
 │
 ├── models/                         # Pre-downloaded model weights (gitignored)
 ├── third-party/                    # Vendored dependencies (llama.cpp, etc.)

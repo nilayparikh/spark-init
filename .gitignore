@@ -86,3 +86,4 @@ dist/
 .local
 .npm
 .bash_history
+.claude/.claude1.json
