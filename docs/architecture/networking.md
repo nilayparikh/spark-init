@@ -29,14 +29,14 @@ docker network create init_default
 
 Services discover each other via Docker's embedded DNS. Container names serve as hostnames within the `init_default` network.
 
-| Service         | Internal Hostname | Port (internal)              | Accessed By              |
-|-----------------|-------------------|------------------------------|--------------------------|
-| `postgres`      | `postgres`        | 5432                         | Grafana, LiteLLM         |
-| `mimir`         | `mimir`           | 9009 (Prometheus), 8080 (HTTP) | Alloy, Grafana        |
-| `loki`          | `loki`            | 3100 (HTTP)                  | Alloy, Grafana           |
-| `alloy`         | `alloy`           | 12345 (scrape)               | Internal only            |
-| `gpu-telemetry` | `gpu-telemetry`   | 9400 (metrics)               | Alloy                    |
-| `cadvisor`      | `cadvisor`        | 8080 (metrics)               | Alloy                    |
+| Service         | Internal Hostname | Port (internal)                | Accessed By      |
+| --------------- | ----------------- | ------------------------------ | ---------------- |
+| `postgres`      | `postgres`        | 5432                           | Grafana, LiteLLM |
+| `mimir`         | `mimir`           | 9009 (Prometheus), 8080 (HTTP) | Alloy, Grafana   |
+| `loki`          | `loki`            | 3100 (HTTP)                    | Alloy, Grafana   |
+| `alloy`         | `alloy`           | 12345 (scrape)                 | Internal only    |
+| `gpu-telemetry` | `gpu-telemetry`   | 9400 (metrics)                 | Alloy            |
+| `cadvisor`      | `cadvisor`        | 8080 (metrics)                 | Alloy            |
 
 ## host.docker.internal
 
@@ -62,16 +62,12 @@ llama.cpp requires direct GPU access via the NVIDIA runtime. Running on host por
 ## Port Mapping Strategy
 
 | Host Port | Service | Profile | Notes |
-| --------- | ------- | ------- | ----- |
-| 3000      | Grafana | `obs`   |
-
-Dashboard UI. Default login: admin / local_observability_admin.
-| 4000 | LiteLLM proxy | `interface`
-OpenAI-compatible API. Requires `LITELLM_MASTER_KEY`.
-| 5432 | PostgreSQL | `data`
-Shared platform database. Not exposed to external hosts.
-| 8000 | llama.cpp backend | `llama-qwen-3-6-27b`
-Direct inference endpoint.
+|-----------|---------|---------|-------|
+| 3000 | Grafana | `obs` | Dashboard UI. Default login: admin / local_observability_admin. |
+| 4000 | LiteLLM proxy | `interface` | OpenAI-compatible API. Requires `LITELLM_MASTER_KEY`. |
+| 5432 | PostgreSQL | `data` | Shared platform database. Not exposed to external hosts. |
+| 8000 | llama.cpp 27B | `llama-qwen-3-6-27b` | Direct inference endpoint for Qwen 3.6 27B. |
+| 8001 | llama.cpp 35B A3B | `llama-qwen-3-6-35b-a3b` | Direct inference endpoint for Qwen 3.6 35B A3B. |
 
 ## Compose File Includes
 

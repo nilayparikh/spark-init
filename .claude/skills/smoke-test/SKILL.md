@@ -24,7 +24,7 @@ Run health checks against the active .init inference stack.
 
 ## Prerequisites
 
-- The `.env` file must exist in the repo root with `LITELLM_MASTER_KEY` and `INTERFACE_QWEN_3_6_27B_API_KEY` set.
+- The `.env` file must exist in the repo root with `LITELLM_MASTER_KEY` and `PRO_API_KEY` set.
 - For `litellm` tests: the `interface` profile must be active and LiteLLM must be reachable at `http://localhost:4000`.
 - For `gpu` tests: NVIDIA drivers and `nvidia-smi` must be available.
 

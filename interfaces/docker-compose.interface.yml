@@ -26,12 +26,12 @@ services:
       NO_DOCS: ${LITELLM_NO_DOCS:-True}
       NO_REDOC: ${LITELLM_NO_REDOC:-True}
       DATABASE_URL: ${INTERFACE_DATABASE_URL:-postgresql://litellm_interface:litellm_interface_local@postgres:5432/litellm_interface}
-      QWEN3_6_27B_BASE_URL: ${INTERFACE_QWEN_3_6_27B_BASE_URL:-http://host.docker.internal:8000/v1}
-      QWEN3_6_27B_API_KEY: ${INTERFACE_QWEN_3_6_27B_API_KEY:-sk-dummy}
-      QWEN3_6_27B_SERVING_MODEL: ${INTERFACE_QWEN_3_6_27B_MODEL:-openai/qwen3.6_27b}
-      QWEN3_6_35B_A3B_BASE_URL: ${INTERFACE_QWEN_3_6_35B_A3B_BASE_URL:-http://host.docker.internal:8001/v1}
-      QWEN3_6_35B_A3B_API_KEY: ${INTERFACE_QWEN_3_6_35B_A3B_API_KEY:-sk-dummy}
-      QWEN3_6_35B_A3B_SERVING_MODEL: ${INTERFACE_QWEN_3_6_35B_A3B_MODEL:-openai/qwen3.6_35b_a3b}
+      PRO_BASE_URL: ${PRO_BASE_URL:-${INTERFACE_QWEN_3_6_27B_BASE_URL:-http://host.docker.internal:8000/v1}}
+      PRO_API_KEY: ${PRO_API_KEY:-${INTERFACE_QWEN_3_6_27B_API_KEY:-sk-dummy}}
+      PRO_SERVING_MODEL: ${PRO_MODEL:-${INTERFACE_QWEN_3_6_27B_MODEL:-openai/qwen3.6_27b}}
+      FLASH_BASE_URL: ${FLASH_BASE_URL:-${INTERFACE_QWEN_3_6_35B_A3B_BASE_URL:-http://host.docker.internal:8001/v1}}
+      FLASH_API_KEY: ${FLASH_API_KEY:-${INTERFACE_QWEN_3_6_35B_A3B_API_KEY:-sk-dummy}}
+      FLASH_SERVING_MODEL: ${FLASH_MODEL:-${INTERFACE_QWEN_3_6_35B_A3B_MODEL:-openai/qwen3.6_35b_a3b}}
       MICROSOFT_FOUNDRY_API_BASE: ${MICROSOFT_FOUNDRY_API_BASE:-https://tuts.services.ai.azure.com/openai/v1}
       MICROSOFT_FOUNDRY_API_KEY: ${MICROSOFT_FOUNDRY_API_KEY:-}
       AZURE_ORCHESTRATOR_API_BASE: ${AZURE_ORCHESTRATOR_API_BASE:-${MICROSOFT_FOUNDRY_API_BASE:-https://tuts.services.ai.azure.com/openai/v1}}

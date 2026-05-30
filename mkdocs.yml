@@ -66,6 +66,16 @@ nav:
   - API Reference:
       - OpenAI Compatible: api/openai-compatible.md
 
+  - Interfaces:
+      - Developer Clients: interfaces/developer-clients.md
+
+  - Observability:
+      - Labeling Standard: observability/labeling.md
+      - Log Coverage: observability/log-coverage.md
+      - Dashboard Standards: observability/dashboard-standards.md
+      - Interface Telemetry: observability/interface-telemetry.md
+      - llama.cpp Telemetry: observability/llamacpp-telemetry.md
+
   - Reference:
       - File Index: reference/file-index.md
       - Docker Images: reference/docker-images.md

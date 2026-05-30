@@ -131,11 +131,20 @@ Local backends → INTERFACE_
 
 ### Model Naming Conventions
 
-- `openai/<provider>/...` — Standard OpenAI-compatible naming
-- `anthropic/<provider>/...` — Claude compatibility aliases:
-  - `claude-opus-4.7`
-  - `claude-sonnet-3.5`
-  - `claude-haiku-3.5`
+The proxy publishes models under two naming schemes:
+
+- `openai/<Provider>/...` — Standard OpenAI-compatible naming for IDE clients
+- `anthropic/<Provider>/...` — Claude compatibility aliases for Claude Code
+
+Claude compatibility aliases:
+
+- `claude-opus-4.7`
+- `claude-sonnet-4.6`
+- `claude-haiku-4.6`
+- `claude-haiku-4-5-20251001`
+- `claude-haiku-4-5`
+
+See [Developer Clients](../interfaces/developer-clients.md) for detailed client configuration.
 
 ### Authentication
 

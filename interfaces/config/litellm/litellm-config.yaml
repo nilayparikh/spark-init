@@ -3,7 +3,7 @@
 # YAML anchors stay local to each file because aliases do not span files.
 include:
   - providers/azure-foundry.yaml
-  - providers/dgx.yaml
+  - providers/core.yaml
   - providers/nvidia.yaml
   - providers/deepseek.yaml
 

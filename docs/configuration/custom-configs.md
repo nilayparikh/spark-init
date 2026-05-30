@@ -12,30 +12,19 @@ The LiteLLM proxy uses a YAML configuration file mounted at `/app/litellm-config
 interfaces/config/litellm/
 ├── litellm-config.yaml          # Root config — includes provider fragments
 └── providers/                   # Per-provider routing fragments
-    ├── azure-foundry.yaml       # Azure Foundry models
-    ├── nvidia-ai-endpoints.yaml  # NVIDIA AI Endpoints
-    └── deepseek.yaml            # DeepSeek API
+    ├── azure-foundry.yaml       # Azure Foundry models (Kimi K2.6, DeepSeek V4 Flash)
+    ├── dgx.yaml                 # Local DGX models (Qwen 3.6 27B, 35B A3B)
+    ├── nvidia.yaml              # NVIDIA AI Endpoints (DeepSeek, MiniMax, Kimi)
+    └── deepseek.yaml            # DeepSeek native API (V4 Flash, V4 Pro)
 ```
 
 The root config uses `include` directives to compose provider-specific routing rules. This keeps the configuration modular and easy to extend.
 
 ### Model Routing
 
-LiteLLM routes requests based on the `model` parameter in the API call. The configuration maps model IDs to backend providers:
+LiteLLM routes requests based on the `model` parameter in the API call. The configuration maps model IDs to backend providers through the provider fragments. Each fragment defines `model_list` entries with routing parameters and `model_info` metadata.
 
-```yaml
-model_list:
-  - model_name: openai/qwen3.6_27b
-    litellm_params:
-      model: openai/qwen3.6_27b
-      api_base: http://host.docker.internal:8000/v1
-      api_key: sk-dummy
-
-  - model_name: openai/Kimi-K2.6-1
-    litellm_params:
-      model: azure/Kimi-K2.6-1
-      api_base: https://tuts.services.ai.azure.com/openai/v1
-```
+Anthropic-compatible aliases (`anthropic/...` and `claude-*`) are published alongside the OpenAI-facing names (`openai/...`) so Claude Code can discover models through gateway discovery.
 
 ### Adding a New Provider
 
@@ -65,7 +54,7 @@ The chat template ensures proper formatting for:
 
 - Multi-turn conversations with system, user, and assistant roles
 - Tool call responses with XML-tagged content
-- Reasoning budget allocation (512 tokens)
+- Reasoning budget allocation
 
 ## Alloy Configuration
 
@@ -87,12 +76,7 @@ loki.source.journal "system" {
 
 ### Label Conventions
 
-All metrics and logs share these standard labels:
-
-- `host` — Machine hostname or identifier
-- `role` — Service role (e.g., `inference`, `proxy`, `collector`)
-- `environment` — Deployment environment (e.g., `local`, `staging`)
-- `stack` — Platform identifier (`.init`)
+All metrics and logs share standard platform labels for cross-service correlation. See [Labeling Standard](../observability/labeling.md) for the full label taxonomy.
 
 ## Mimir Configuration
 

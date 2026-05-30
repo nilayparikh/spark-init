@@ -20,7 +20,7 @@ curl -X POST http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
   -d '{
-    "model": "openai/qwen3.6_27b",
+    "model": "openai/DGX/Qwen3.6 27B/SWE",
     "messages": [
       {"role": "user", "content": "What is 2+2?"}
     ],
@@ -48,7 +48,7 @@ The llama.cpp backend is accessible directly, bypassing the proxy. Use this for 
 curl -X POST http://localhost:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "qwen3.6-27b",
+    "model": "qwen3.6_27b",
     "messages": [
       {"role": "user", "content": "What is 2+2?"}
     ],
@@ -62,7 +62,7 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 
 ```json
 {
-  "model": "openai/qwen3.6_27b",
+  "model": "openai/DGX/Qwen3.6 27B/SWE",
   "messages": [
     {"role": "system", "content": "You are a helpful assistant."},
     {"role": "user", "content": "Explain quantum computing."}
@@ -94,7 +94,7 @@ curl -X POST http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
   -d '{
-    "model": "openai/qwen3.6_27b",
+    "model": "openai/DGX/Qwen3.6 27B/SWE",
     "messages": [{"role": "user", "content": "Count to 10"}],
     "stream": true
   }'
@@ -111,26 +111,43 @@ data: [DONE]
 
 ## Model Naming Conventions
 
-### LiteLLM Proxy
+### OpenAI-Facing (IDE Clients)
 
-Through the proxy, models are identified by the routing name defined in the LiteLLM config (`interfaces/config/litellm/`):
+For OpenAI-compatible clients (VS Code, Cline, Continue, etc.):
 
-```
-openai/<model-alias>
-```
+- `openai/DGX/Qwen3.6 27B/SWE` — Qwen 3.6 27B via llama.cpp
+- `openai/DGX/Qwen3.6 27B/Writing` — Qwen 3.6 27B Writing variant
+- `openai/Azure/Kimi K2.6/Master Orchestrator` — Azure Foundry Kimi K2.6
+- `openai/Azure/DeepSeek V4 Flash` — Azure Foundry DeepSeek
+- `openai/NVIDIA/Kimi K2.6` — NVIDIA AI Endpoints Kimi K2.6
+- `openai/NVIDIA/MiniMax M2.7` — NVIDIA AI Endpoints MiniMax
+- `openai/DeepSeek/DeepSeek V4 Flash` — DeepSeek native
+- `openai/DeepSeek/DeepSeek V4 Pro` — DeepSeek native
 
-For example:
-- `openai/qwen3.6_27b` — Qwen 3.6 27B via llama.cpp
-- `openai/Kimi-K2.6-1` — Azure orchestrator model
+### Anthropic-Facing (Claude Code)
 
-The `openai/` prefix tells LiteLLM to route using the OpenAI-compatible backend. The alias maps to a specific provider and endpoint in the LiteLLM config.
+For Claude Code and Anthropic-compatible clients:
+
+- `anthropic/DGX/Qwen3.6 27B/SWE`
+- `anthropic/DGX/Qwen3.6 27B/Writing`
+- `anthropic/Azure/Kimi K2.6/Master Orchestrator`
+- `anthropic/NVIDIA/Kimi K2.6`
+- `anthropic/DeepSeek/DeepSeek V4 Pro`
+- `claude-opus-4.7`
+- `claude-sonnet-4.6`
+- `claude-haiku-4.6`
+- `claude-haiku-4-5-20251001`
+- `claude-haiku-4-5`
+
+See [Developer Clients](../interfaces/developer-clients.md) for detailed client configuration.
 
 ### llama.cpp Direct
 
-Direct access uses the model name as loaded by llama.cpp (typically the GGUF filename without extension):
+Direct access uses the model name as loaded by llama.cpp:
 
 ```
-qwen3.6-27b-text-nvfp4-mtp
+qwen3.6_27b
+qwen3.6_35b_a3b
 ```
 
 ## Response Format
@@ -142,7 +159,7 @@ qwen3.6-27b-text-nvfp4-mtp
   "id": "chatcmpl-123",
   "object": "chat.completion",
   "created": 1700000000,
-  "model": "openai/qwen3.6_27b",
+  "model": "openai/DGX/Qwen3.6 27B/SWE",
   "choices": [
     {
       "index": 0,
@@ -188,7 +205,7 @@ client = OpenAI(
 )
 
 response = client.chat.completions.create(
-    model="openai/qwen3.6_27b",
+    model="openai/DGX/Qwen3.6 27B/SWE",
     messages=[{"role": "user", "content": "Hello!"}],
 )
 print(response.choices[0].message.content)
@@ -213,4 +230,4 @@ The proxy adds capabilities beyond the base OpenAI API:
 > **★ Insight**
 > - Always route through LiteLLM (`:4000`) in production — it provides auth, retries, and observability that llama.cpp lacks.
 > - Use direct llama.cpp (`:8000`) only for benchmarking or internal tooling where auth overhead is undesirable.
-> - The `openai/` model prefix in LiteLLM is a routing convention, not a requirement — it maps to the `openai/*` provider in the config.
+> - The `openai/` and `anthropic/` model prefixes are routing conventions — they map to provider configs under `interfaces/config/litellm/providers/`.
