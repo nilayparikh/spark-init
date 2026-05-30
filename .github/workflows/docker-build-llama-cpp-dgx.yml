@@ -11,7 +11,7 @@ on:
     tags: ["v*"]
     paths:
       - "docker/llama-cpp-dgx/**"
-      - ".github/workflows/docker-build.yml"
+      - ".github/workflows/docker-build-llama-cpp-dgx.yml"
   workflow_dispatch:
 
 env:
@@ -28,8 +28,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
