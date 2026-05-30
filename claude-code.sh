@@ -47,7 +47,7 @@ if docker image inspect "$TARGET_IMAGE" >/dev/null 2>&1; then
 else
     echo "🚀 [BUILD] '${TARGET_IMAGE}' not found. Compiling container layers..."
     docker build \
-      -f .devcontainer/Dockerfile \
+      -f docker/claude-code/Dockerfile \
       -t "${REGISTRY}/${IMAGE_NAME}:${VERSION}" \
       -t "${REGISTRY}/${IMAGE_NAME}:latest" .
     echo "✅ [BUILD] Successfully built and tagged both versions."
@@ -86,6 +86,9 @@ DOCKER_OPTS=(
   -e HOME="/workspace"
   -e CLAUDE_CONFIG_DIR="/workspace/.claude"
   
+  # Enable gateway model discovery for LiteLLM proxy model routing
+  -e CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY="1"
+
   # Set the custom model as the primary default engine loop
   -e CLAUDE_MODEL=".INIT/Pro"
   -e IS_SANDBOX="1"

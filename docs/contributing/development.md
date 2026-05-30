@@ -14,11 +14,11 @@ This guide walks you through setting up a local development environment for the 
 
 ```bash
 git clone https://github.com/[owner]/init-stack.git
-cd .init
+cd init-stack
 git submodule update --init --recursive
 ```
 
-The `third-party/llama.cpp/` directory is a git submodule — the `--recursive` flag ensures it is populated.
+The `third-party/llama.cpp/` and `models/` directories are git submodules — the `--recursive` flag ensures they are populated.
 
 ## Configure Environment
 
@@ -31,7 +31,6 @@ Edit `.env` with your local settings. Critical variables to update:
 | Variable                             | What to Change                         |
 | ------------------------------------ | -------------------------------------- |
 | `LLAMA_QWEN_3_6_27B_GGUF_MODEL_PATH` | Path to your GGUF model file on disk   |
-| `LLAMA_QWEN_3_6_27B_BINARY_PATH`     | Path to compiled `llama-server` binary |
 | `LITELLM_MASTER_KEY`                 | Your preferred API key                 |
 | `GRAFANA_ADMIN_PASSWORD`             | A strong password for Grafana          |
 
@@ -96,21 +95,6 @@ Update `.env` to use the local image:
 ```bash
 LLAMA_QWEN_3_6_27B_IMAGE_REPO=nilayparikh/llama-cpp-dgx
 LLAMA_CPP_TAG=local
-```
-
-## Dev Container
-
-The repository includes a VS Code Dev Container configuration (`.devcontainer/`). It provides:
-
-- GPU access (`--gpus=all`)
-- Host networking (`--network=host`) for service discovery
-- Docker-outside-of-Docker for managing compose stacks
-- Recommended extensions: Docker, Python, YAML
-
-Launch from VS Code:
-
-```
-Ctrl+Shift+P → Dev Containers: Reopen in Container
 ```
 
 ## Linting

@@ -49,9 +49,9 @@ Edit `interfaces/config/litellm/config.yaml` to add the model routing:
 
 ```yaml
 model_list:
-  - model_name: openai/your-model
+  - model_name: Provider/Your-Model
     litellm_params:
-      model: openai/qwen3.6_27b
+      model: openai/your-backend-model
       api_base: http://host.docker.internal:8000
       api_key: "not-needed"
 ```
@@ -82,7 +82,7 @@ curl -X POST http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
   -d '{
-    "model": "openai/your-model",
+    "model": "Provider/Your-Model",
     "messages": [{"role": "user", "content": "Hello"}],
     "max_tokens": 50
   }' | python3 -m json.tool | head -30

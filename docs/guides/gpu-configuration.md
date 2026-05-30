@@ -66,7 +66,7 @@ sudo systemctl restart docker
 Verify with:
 
 ```bash
-docker run --rm --gpus all nvidia/cuda:12.8.0-base-ubuntu24.04 nvidia-smi
+docker run --rm --gpus all nvidia/cuda:13.1.2-base-ubuntu24.04 nvidia-smi
 ```
 
 ## Persistent GPU Settings

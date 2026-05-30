@@ -99,9 +99,11 @@ graph LR
 - **Mimir and Loki** export explicit HTTP health status endpoints
 - **Alloy** never starts until Mimir and Loki are healthy — preventing streams to uninitialized endpoints
 
-## Manual Startup Only
+## Restart Policy
 
-Every service sets `restart: "no"` explicitly. The stack **never auto-starts** when the Docker daemon or host boots. Operators must manually invoke `docker compose up -d` for any services they want running.
+Most services use `restart: "no"` — the stack **never auto-starts** when the Docker daemon or host boots. Inference backends additionally use `restart: "on-failure"` to recover from transient crashes without manual intervention.
+
+Operators must invoke `docker compose up -d` explicitly to start any set of services.
 
 This design ensures:
 

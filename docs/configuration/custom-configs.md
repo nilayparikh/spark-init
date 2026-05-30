@@ -13,7 +13,8 @@ interfaces/config/litellm/
 ├── config.yaml                  # Root config — includes provider fragments
 └── providers/                   # Per-provider routing fragments
     ├── azure-foundry.yaml       # Azure Foundry models (Kimi K2.6, DeepSeek V4 Flash)
-    ├── dgx.yaml                 # Local DGX models (Qwen 3.6 27B, 35B A3B)
+    ├── dgx-spark.yaml           # Local DGX models (Qwen 3.6 27B, 35B A3B)
+    ├── opencode-zen.yaml        # OpenCode Zen models (MIMO V2.5, DEEPSEEK V4 Flash, BIG PICKLE)
     ├── nvidia.yaml              # NVIDIA AI Endpoints (DeepSeek, MiniMax, Kimi)
     └── deepseek.yaml            # DeepSeek native API (V4 Flash, V4 Pro)
 ```
@@ -24,7 +25,7 @@ The root config uses `include` directives to compose provider-specific routing r
 
 LiteLLM routes requests based on the `model` parameter in the API call. The configuration maps model IDs to backend providers through the provider fragments. Each fragment defines `model_list` entries with routing parameters and `model_info` metadata.
 
-Anthropic-compatible aliases (`anthropic/...` and `claude-*`) are published alongside the OpenAI-facing names (`openai/...`) so Claude Code can discover models through gateway discovery.
+Canonical `.INIT/` aliases (e.g. `.INIT/Pro`, `.INIT/Flash`) are published for Claude Code model selection through gateway discovery.
 
 ### Adding a New Provider
 

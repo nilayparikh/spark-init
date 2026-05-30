@@ -123,28 +123,24 @@ The LiteLLM proxy provides a unified OpenAI-compatible API surface.
 ### Multi-Provider Routing
 
 ```
-Azure Foundry → AZURE_ORCHESTRATOR_
-NVIDIA AI Endpoints → NVIDIA_
-DeepSeek → DEEPSEEK_
-Local backends → INTERFACE_
+Local DGX Spark   → DGX_SPARK_M_* / DGX_SPARK_S_* env vars
+Azure Foundry     → MICROSOFT_FOUNDRY_* env vars
+NVIDIA AI Endpoints → NVIDIA_* env vars
+DeepSeek          → DEEPSEEK_* env vars
+OpenCode Zen      → OPENCODE_ZEN_* env vars
 ```
 
-### Model Naming Conventions
+### Model Naming
 
-The proxy publishes models under two naming schemes:
+The proxy publishes models as `<Provider>/<Name>` identifiers. Canonical `.INIT/` aliases are configured for Claude Code model selection:
 
-- `openai/<Provider>/...` — Standard OpenAI-compatible naming for IDE clients
-- `anthropic/<Provider>/...` — Claude compatibility aliases for Claude Code
+| `.INIT/` Alias | Routes To | Backend |
+|----------------|-----------|---------|
+| `.INIT/Ultra` | `OpenCodeZen/BIG-PICKLE` | OpenCode Zen |
+| `.INIT/Pro` | `DGX/Qwen3.6-27B` | Local llama.cpp (27B) |
+| `.INIT/Flash` | `DGX/Qwen3.6-35B-A3B` | Local llama.cpp (35B A3B) |
 
-Claude compatibility aliases:
-
-- `claude-opus-4.7`
-- `claude-sonnet-4.6`
-- `claude-haiku-4.6`
-- `claude-haiku-4-5-20251001`
-- `claude-haiku-4-5`
-
-See [Developer Clients](../interfaces/developer-clients.md) for detailed client configuration.
+Use `/model .INIT/Pro` in Claude Code to select the local 27B backend. See [Model Reference](../../api/openai-compatible.md) for the full model catalog.
 
 ### Authentication
 

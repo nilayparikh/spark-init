@@ -17,7 +17,7 @@ router_settings:
   num_retries: 5
   retry_after: 0
   model_group_alias:
-    ".INIT/Ultra": "OpenCodeZen/QWEN3.6-PLUS"
+    ".INIT/Ultra": "OpenCodeZen/BIG-PICKLE"
     ".INIT/Pro": "DGX/Qwen3.6-27B"
     ".INIT/Flash": "DGX/Qwen3.6-35B-A3B"
   retry_policy:

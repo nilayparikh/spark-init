@@ -72,10 +72,16 @@ COMPOSE_PROFILES=data,interface,llama-qwen-3-6-27b
 
 ### Environment
 
-Copy `.env.example` to `.env` and update secrets and paths. Critical settings:
+Copy `.env.example` to `.env` and update secrets and paths. Before first use, also initialize submodules:
+
+```bash
+cp .env.example .env
+git submodule update --init --recursive
+```
+
+Critical settings:
 
 - `LLAMA_QWEN_3_6_27B_GGUF_MODEL_PATH` — must point to a valid GGUF model file on disk
-- `LLAMA_QWEN_3_6_27B_BINARY_PATH` — path to compiled llama-server binary
 - `LITELLM_MASTER_KEY` — auth key for the proxy
 
 ## Linting & CI
@@ -113,11 +119,13 @@ The image is also built by CI when `interfaces/dockerfiles/` changes.
 
 ## `claude-code.sh`
 
-Launches an isolated Claude Code container routed through the local LiteLLM proxy. It:
+Launches an isolated Claude Code container (NVIDIA PyTorch base) routed through the local LiteLLM proxy. It:
 
-1. Parses `.env` for `LITELLM_MASTER_KEY`
-2. Builds the dev container image from `.devcontainer/Dockerfile` if needed
+1. Parses `.env` for model routing and auth tokens
+2. Builds the container image from `docker/claude-code/Dockerfile` if not cached
 3. Runs Claude Code with `ANTHROPIC_BASE_URL` pointing to the LiteLLM proxy at `http://barsana.local:4000`
+
+The image uses `.INIT/Pro`, `.INIT/Flash`, `.INIT/Ultra` model aliases mapped to the LiteLLM backends (see `claude-code.sh` for the full routing table).
 
 ## Key Files to Know
 
@@ -139,4 +147,8 @@ The docs site is built with MkDocs (`mkdocs.yml`). Source lives in `docs/`. Depl
 
 ## Submodules
 
-- `third-party/llama.cpp/` — git submodule for the llama.cpp inference engine. Update with `git submodule update --init --recursive`.
+- `third-party/llama.cpp/` — inference backend (ggml-org/llama.cpp)
+- `models/qwen3.6-27b-text-nvfp4-mtp/` — Qwen 3.6 27B GGUF model weights
+- `models/qwen3.6-35b-a3b-nvfp4-mtp/` — Qwen 3.6 35B A3B GGUF model weights
+
+All initialized via `git submodule update --init --recursive`.

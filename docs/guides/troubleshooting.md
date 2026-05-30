@@ -30,7 +30,7 @@ sudo nvidia-ctk runtime configure --runtime=docker
 sudo systemctl restart docker
 
 # Verify
-docker run --rm --gpus all nvidia/cuda:12.8.0-base-ubuntu24.04 nvidia-smi
+docker run --rm --gpus all nvidia/cuda:13.1.2-base-ubuntu24.04 nvidia-smi
 ```
 
 **2. Driver/Runtime version mismatch**
@@ -287,7 +287,7 @@ docker info
 docker info | grep -A 5 "Runtimes"
 
 # 3. GPU is visible to Docker
-docker run --rm --gpus all nvidia/cuda:12.8.0-base-ubuntu24.04 nvidia-smi
+docker run --rm --gpus all nvidia/cuda:13.1.2-base-ubuntu24.04 nvidia-smi
 
 # 4. Network is created
 docker network ls | grep init_default

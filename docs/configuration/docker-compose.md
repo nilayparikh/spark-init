@@ -61,50 +61,21 @@ networks:
 
 Every service is bound to one or more profiles. The `COMPOSE_PROFILES` variable in `.env` is the single switchboard for the entire platform.
 
-| Profile | Area    | Service(s) | Notes |
-| ------- | ------- | ---------- | ----- |
-| `data`  | `data/` |
-
-- `postgres`
-- Shared dependency for LiteLLM and Grafana.
-- Required whenever any service needs Postgres.
--
-- `obs`
-- `observability/`
-- `mimir`, `loki`, `alloy`, `gpu-telemetry`, `grafana`
-- Observability stack. Requires `data` if Grafana should use Postgres.
--
-- `interface`
-- `interfaces/`
-- `litellm`
-- OpenAI-compatible proxy on port 4000.
--
-- `llama-qwen-3-6-27b`
-- `interfaces/`
-- `llama-qwen-3-6-27b`
-- llama.cpp-based Standard model (Qwen 3.6 27B) on host port 8000.
--
-- `all`
-- All layers
-- Convenience profile — starts everything
-- Equivalent to: `data,obs,interface,llama-qwen-3-6-27b`
+| Profile | Area | Service(s) | Notes |
+| ------- | ---- | ---------- | ----- |
+| `data` | `data/` | `postgres` | Shared dependency for LiteLLM and Grafana. Required whenever any service needs Postgres. |
+| `obs` | `observability/` | `mimir`, `loki`, `alloy`, `gpu-telemetry`, `grafana` | Observability stack. Requires `data` if Grafana should use Postgres. |
+| `interface` | `interfaces/` | `litellm` | OpenAI-compatible proxy on port 4000. |
+| `llama-qwen-3-6-27b` | `interfaces/` | `llama-qwen-3-6-27b` | llama.cpp-based Standard model (Qwen 3.6 27B) on host port 8000. |
+| `all` | All layers | All services | Convenience profile — starts everything. Equivalent to `data,obs,interface,llama-qwen-3-6-27b`. |
 
 ### Recommended Profile Sets
 
 | Stack Shape | COMPOSE_PROFILES | Use Case |
 | ----------- | ---------------- | -------- |
-
-- Full stack
-- `data,obs,interface,llama-qwen-3-6-27b`
-- Default — everything running together
--
-- LiteLLM only
-- `data,interface`
-- Proxy without local inference backend (cloud providers only)
--
-- Data + observability
-- `data,obs`
-- Monitoring without inference backends
+| Full stack | `data,obs,interface,llama-qwen-3-6-27b` | Default — everything running together |
+| LiteLLM only | `data,interface` | Proxy without local inference backend (cloud providers only) |
+| Data + observability | `data,obs` | Monitoring without inference backends |
 
 ## Volume Mounts
 
@@ -114,52 +85,25 @@ All persistent data uses local directory volume mounts. These directories are gi
 
 | Host Path | Container Path | Purpose |
 | --------- | -------------- | ------- |
-
-- `data/storage/postgres/`
-- `/var/lib/postgresql/data/pgdata`
-- PostgreSQL data directory
+| `data/storage/postgres/` | `/var/lib/postgresql/data/pgdata` | PostgreSQL data directory |
 
 ### Observability Layer
 
 | Host Path | Container Path | Purpose |
 | --------- | -------------- | ------- |
-
-- `observability/volumes/alloy/`
-- `/alloy`
-- Alloy state and cache
--
-- `observability/volumes/grafana/csv/`
-- `/var/lib/grafana/csv`
-- Grafana CSV exports
--
-- `observability/volumes/grafana/pdf/`
-- `/var/lib/grafana/pdf`
-- Grafana PDF reports
--
-- `observability/volumes/loki/`
-- `/loki`
-- Loki chunks, WAL, compactor, tsdb-shipper
--
-- `observability/volumes/mimir/`
-- `/mimir`
-- Mimir blocks, compactor, object store
+| `observability/volumes/alloy/` | `/alloy` | Alloy state and cache |
+| `observability/volumes/grafana/csv/` | `/var/lib/grafana/csv` | Grafana CSV exports |
+| `observability/volumes/grafana/pdf/` | `/var/lib/grafana/pdf` | Grafana PDF reports |
+| `observability/volumes/loki/` | `/loki` | Loki chunks, WAL, compactor, tsdb-shipper |
+| `observability/volumes/mimir/` | `/mimir` | Mimir blocks, compactor, object store |
 
 ### Interfaces Layer
 
 | Host Path | Container Path | Purpose |
 | --------- | -------------- | ------- |
-
-- `interfaces/config/litellm/`
-- `/app/litellm-config/`
-- LiteLLM configuration files (read-only)
--
-- `interfaces/config/qwen3.6/chat_template.jinja`
-- `/workspace/chat_template.jinja`
-- Qwen 3.6 chat template (read-only)
--
-- `<model_path>.gguf`
-- `/models/model.gguf`
-- GGUF model file (read-only, from host)
+| `interfaces/config/litellm/` | `/app/litellm-config/` | LiteLLM configuration files (read-only) |
+| `interfaces/config/qwen3.6/chat_template.jinja` | `/workspace/chat_template.jinja` | Qwen 3.6 chat template (read-only) |
+| `<model_path>.gguf` | `/models/model.gguf` | GGUF model file (read-only, from host) |
 
 ## Health Checks
 
@@ -167,26 +111,14 @@ Every service implements health checks to enforce deterministic boot ordering:
 
 | Service | Health Check | Interval |
 | ------- | ------------ | -------- |
-
-- `postgres`
-- `pg_isready`
-- 10s
--
-- `mimir`
-- HTTP endpoint
-- 30s
--
-- `loki`
-- HTTP endpoint
-- 30s
--
-- `grafana`
-- HTTP endpoint
-- 30s
+| `postgres` | `pg_isready` | 10s |
+| `mimir` | HTTP endpoint | 30s |
+| `loki` | HTTP endpoint | 30s |
+| `grafana` | HTTP endpoint | 30s |
 
 ## Manual Startup Only
 
-Every service sets `restart: "no"` explicitly. The stack **never auto-starts** when the Docker daemon or host boots. Operators must manually invoke `docker compose up -d` for any services they want running.
+Most services use `restart: "no"` — the stack **never auto-starts** when the Docker daemon or host boots. Inference backends additionally use `restart: "on-failure"` to recover from transient crashes. Operators must manually invoke `docker compose up -d` for any services they want running.
 
 This design ensures:
 

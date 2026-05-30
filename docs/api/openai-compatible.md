@@ -20,7 +20,7 @@ curl -X POST http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
   -d '{
-    "model": "openai/DGX/Qwen3.6 27B/SWE",
+    "model": "DGX/Qwen3.6-27B",
     "messages": [
       {"role": "user", "content": "What is 2+2?"}
     ],
@@ -62,7 +62,7 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 
 ```json
 {
-  "model": "openai/DGX/Qwen3.6 27B/SWE",
+  "model": "DGX/Qwen3.6-27B",
   "messages": [
     { "role": "system", "content": "You are a helpful assistant." },
     { "role": "user", "content": "Explain quantum computing." }
@@ -94,7 +94,7 @@ curl -X POST http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
   -d '{
-    "model": "openai/DGX/Qwen3.6 27B/SWE",
+    "model": "DGX/Qwen3.6-27B",
     "messages": [{"role": "user", "content": "Count to 10"}],
     "stream": true
   }'
@@ -111,35 +111,37 @@ data: [DONE]
 
 ## Model Naming Conventions
 
-### OpenAI-Facing (IDE Clients)
+The gateway publishes models under `<Provider>/<Name>` identifiers and canonical `.INIT/` aliases for Claude Code routing.
 
-For OpenAI-compatible clients (VS Code, Cline, Continue, etc.):
+### All Available Models
 
-- `openai/DGX/Qwen3.6 27B/SWE` — Qwen 3.6 27B via llama.cpp
-- `openai/DGX/Qwen3.6 27B/Writing` — Qwen 3.6 27B Writing variant
-- `openai/Azure/Kimi K2.6/Master Orchestrator` — Azure Foundry Kimi K2.6
-- `openai/Azure/DeepSeek V4 Flash` — Azure Foundry DeepSeek
-- `openai/NVIDIA/Kimi K2.6` — NVIDIA AI Endpoints Kimi K2.6
-- `openai/NVIDIA/MiniMax M2.7` — NVIDIA AI Endpoints MiniMax
-- `openai/DeepSeek/DeepSeek V4 Flash` — DeepSeek native
-- `openai/DeepSeek/DeepSeek V4 Pro` — DeepSeek native
+| Model ID | Provider | Type |
+|----------|----------|------|
+| `DGX/Qwen3.6-27B` | Local llama.cpp (27B) | Chat |
+| `DGX/Qwen3.6-35B-A3B` | Local llama.cpp (35B A3B) | Chat |
+| `Azure/Kimi-K2.6` | Azure Foundry | Chat |
+| `Azure/DeepSeek V4 Flash` | Azure Foundry | Chat |
+| `DeepSeek/DeepSeek-V4-Flash` | DeepSeek native | Chat |
+| `DeepSeek/DeepSeek-V4-Pro` | DeepSeek native | Chat |
+| `NVIDIA/DeepSeek-V4-Flash` | NVIDIA AI Endpoints | Chat |
+| `NVIDIA/MiniMax-M2.7` | NVIDIA AI Endpoints | Chat |
+| `NVIDIA/Kimi-K2.6` | NVIDIA AI Endpoints | Chat |
+| `OpenCodeZen/MIMO-V2.5-FREE` | OpenCode Zen | Chat |
+| `OpenCodeZen/NEMOTRON-3-SUPER-FREE` | OpenCode Zen | Chat |
+| `OpenCodeZen/DEEPSEEK-V4-FLASH-FREE` | OpenCode Zen | Chat |
+| `OpenCodeZen/BIG-PICKLE` | OpenCode Zen | Chat |
 
-### Anthropic-Facing (Claude Code)
+### Canonical Aliases (.INIT/)
 
-For Claude Code and Anthropic-compatible clients:
+The proxy publishes model group aliases for Claude Code model selection:
 
-- `anthropic/DGX/Qwen3.6 27B/SWE`
-- `anthropic/DGX/Qwen3.6 27B/Writing`
-- `anthropic/Azure/Kimi K2.6/Master Orchestrator`
-- `anthropic/NVIDIA/Kimi K2.6`
-- `anthropic/DeepSeek/DeepSeek V4 Pro`
-- `claude-opus-4.7`
-- `claude-sonnet-4.6`
-- `claude-haiku-4.6`
-- `claude-haiku-4-5-20251001`
-- `claude-haiku-4-5`
+| Alias | Routes To |
+|-------|-----------|
+| `.INIT/Ultra` | `OpenCodeZen/BIG-PICKLE` |
+| `.INIT/Pro` | `DGX/Qwen3.6-27B` |
+| `.INIT/Flash` | `DGX/Qwen3.6-35B-A3B` |
 
-See [Developer Clients](../interfaces/developer-clients.md) for detailed client configuration.
+Use `/model .INIT/Pro` in Claude Code to select the local 27B backend.
 
 ### llama.cpp Direct
 
@@ -159,7 +161,7 @@ qwen3.6_35b_a3b
   "id": "chatcmpl-123",
   "object": "chat.completion",
   "created": 1700000000,
-  "model": "openai/DGX/Qwen3.6 27B/SWE",
+  "model": "DGX/Qwen3.6-27B",
   "choices": [
     {
       "index": 0,
@@ -205,7 +207,7 @@ client = OpenAI(
 )
 
 response = client.chat.completions.create(
-    model="openai/DGX/Qwen3.6 27B/SWE",
+    model="DGX/Qwen3.6-27B",
     messages=[{"role": "user", "content": "Hello!"}],
 )
 print(response.choices[0].message.content)
@@ -231,4 +233,4 @@ The proxy adds capabilities beyond the base OpenAI API:
 >
 > - Always route through LiteLLM (`:4000`) in production — it provides auth, retries, and observability that llama.cpp lacks.
 > - Use direct llama.cpp (`:8000`) only for benchmarking or internal tooling where auth overhead is undesirable.
-> - The `openai/` and `anthropic/` model prefixes are routing conventions — they map to provider configs under `interfaces/config/litellm/providers/`.
+> - LiteLLM translates OpenAI-shaped requests to the upstream backend using the `model` field in `litellm_params`, defined in provider configs under `interfaces/config/litellm/providers/`.

@@ -20,13 +20,6 @@ Master file catalog for the `.init` project. This index covers all source files,
 | `.github/workflows/docker-build.yml` | Build and push llama.cpp Docker image       |
 | `.github/workflows/deploy-docs.yml`  | Deploy MkDocs site to GitHub Pages          |
 
-## `.devcontainer/` — Dev Container
-
-| File                              | Description                         |
-| --------------------------------- | ----------------------------------- |
-| `.devcontainer/devcontainer.json` | VS Code Dev Container configuration |
-| `.devcontainer/Dockerfile`        | Dev container image definition      |
-
 ## `data/` — Data Layer
 
 | File                                                 | Description                                 |

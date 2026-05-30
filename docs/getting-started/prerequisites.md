@@ -22,8 +22,7 @@ This page covers the system requirements and software prerequisites for running 
 | OS        | Ubuntu 24.04 ARM64 (primary)             |
 | CPU       | 8+ cores for host-side collection agents |
 | RAM       | 32 GB system memory (separate from VRAM) |
-
-| Disk Space for models and Docker images.
+| Disk      | 100+ GB free space for models and Docker images |
 
 ## Software Requirements
 
@@ -86,25 +85,32 @@ git --version
 
 ## Model Files
 
-Model weights are **not included** in this repository. You need to download them separately:
-
-### Standard Model — Qwen 3.6 27B (GGUF for llama.cpp)
-
-Download the GGUF Q4_K_M quantized model from Hugging Face and place it on your local filesystem. Update `LLAMA_QWEN_3_6_27B_GGUF_MODEL_PATH` in `.env` to point to the downloaded file.
-
-Example:
+Model weights are **not included** directly in this repository, but are available as git submodules:
 
 ```bash
-# Download the GGUF model (use your preferred source)
-wget https://huggingface.co/.../qwen3.6-27b-q4k_m.gguf -P /path/to/models/
-
-# Set in .env
-LLAMA_QWEN_3_6_27B_GGUF_MODEL_PATH=/path/to/models/qwen3.6-27b-q4k_m.gguf
+# Initialize all model submodules
+git submodule update --init --recursive
 ```
 
-### Lite Model (GGUF for llama.cpp)
+This populates `models/qwen3.6-27b-text-nvfp4-mtp/` and `models/qwen3.6-35b-a3b-nvfp4-mtp/` with the GGUF weight files. The `.env.example` defaults point to these paths.
 
-Download the Lite variant GGUF model and configure similarly. The Lite model is optimized for lower VRAM and CPU usage, making it suitable for development and testing environments.
+### Manual Download (Alternative)
+
+If you prefer not to use submodules, download the GGUF files manually:
+
+```bash
+# Download the 27B model
+wget <hf-url-to-gguf> -P /path/to/models/
+
+# Download the 35B A3B model + multimodal projector
+wget <hf-url-to-35b-gguf> -P /path/to/models/
+wget <hf-url-to-mmproj> -P /path/to/models/
+
+# Set in .env
+LLAMA_QWEN_3_6_27B_GGUF_MODEL_PATH=/path/to/models/qwen3.6-27b-model.gguf
+LLAMA_QWEN_3_6_35B_A3B_GGUF_MODEL_PATH=/path/to/models/qwen3.6-35b-a3b-model.gguf
+LLAMA_QWEN_3_6_35B_A3B_MMPROJ_MODEL_PATH=/path/to/models/mmproj-BF16.gguf
+```
 
 > **Note:** Only llama.cpp is supported as the inference backend. vLLM is NOT supported on DGX Spark hardware due to SM120/SM121 limitations (missing TMEM, unoptimized kernels, MTP shape mismatch).
 
@@ -123,7 +129,7 @@ docker compose version > /dev/null 2>&1 && echo "✓ Compose OK" || echo "✗ Co
 docker run --rm --runtime=nvidia --gpus all nvidia/cuda:13.1.2-base-ubuntu24.04 nvidia-smi > /dev/null 2>&1 && echo "✓ NVIDIA runtime OK" || echo "✗ NVIDIA runtime NOT OK"
 
 # 4. Model file exists
-[ -f "$LLAMA_QWEN_3_6_27B_GGUF_MODEL_PATH" ] && echo "✓ Model file OK" || echo "✗ Model file NOT FOUND"
+[ -f "$LLAMA_QWEN_3_6_27B_GGUF_MODEL_PATH" ] && echo "✓ 27B model OK" || echo "✗ 27B model NOT FOUND"
 ```
 
 ## Platform Support

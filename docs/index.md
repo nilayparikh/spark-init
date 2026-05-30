@@ -32,6 +32,9 @@ Each layer is activated independently through Docker Compose profiles, so you ca
 git clone https://github.com/nilayparikh/init-stack.git
 cd init-stack
 
+# Initialize submodules (llama.cpp backend + model weights)
+git submodule update --init --recursive
+
 # Configure environment and secrets
 cp .env.example .env
 # Edit .env — set LITELLM_MASTER_KEY, model paths, and COMPOSE_PROFILES
@@ -80,7 +83,7 @@ Verify with `docker compose ps` and check the health endpoints listed in the [Qu
 │   ├── config/qwen3.6/             # Chat templates for Qwen 3.6
 │   └── dockerfiles/                # Custom Docker images (llama.cpp CUDA build)
 │
-├── models/                         # Pre-downloaded model weights (gitignored)
+├── models/                         # Model weight submodules (GGUF files)
 ├── third-party/                    # Vendored dependencies (llama.cpp, etc.)
 └── docs/                           # This documentation site
 ```

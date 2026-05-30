@@ -18,10 +18,18 @@ Before you begin, ensure your system has:
 
 ```bash
 git clone https://github.com/nilayparikh/init-stack.git
-cd .init
+cd init-stack
 ```
 
-### 2. Configure Environment Variables
+### 2. Initialize Submodules
+
+```bash
+git submodule update --init --recursive
+```
+
+This pulls the llama.cpp inference backend and model weight files.
+
+### 3. Configure Environment Variables
 
 ```bash
 cp .env.example .env
@@ -34,11 +42,11 @@ Edit `.env` with your local settings. The critical variables to set:
 | `COMPOSE_PROFILES`                   | Stack shape selection            | `data,obs,interface,llama-qwen-3-6-27b` |
 | `LLAMA_QWEN_3_6_27B_GGUF_MODEL_PATH` | Path to your GGUF model file     | `/path/to/model.gguf`                   |
 | `LITELLM_MASTER_KEY`                 | LiteLLM proxy authentication key | `sk-your-secret-key`                    |
-| `AZURE_ORCHESTRATOR_API_KEY`         | Azure Foundry API key (optional) | Leave empty if not using cloud models   |
+| `MICROSOFT_FOUNDRY_API_KEY`         | Azure Foundry API key (optional) | Leave empty if not using cloud models   |
 
 > **Note:** The `.env` file is git-ignored. Only `.env.example` is committed. Never commit your `.env`.
 
-### 3. Choose Your Stack Shape
+### 4. Choose Your Stack Shape
 
 Set `COMPOSE_PROFILES` in `.env` to one of these configurations:
 
@@ -49,7 +57,7 @@ Set `COMPOSE_PROFILES` in `.env` to one of these configurations:
 | `data`                                  | Data layer only               | PostgreSQL for persistent storage     |
 | `obs`                                   | Observability only            | Grafana/Mimir/Loki monitoring stack   |
 
-### 4. Start the Stack
+### 5. Start the Stack
 
 ```bash
 docker compose up -d
@@ -57,7 +65,7 @@ docker compose up -d
 
 This starts all services matching your `COMPOSE_PROFILES`. The first run will pull Docker images and may take a few minutes.
 
-### 5. Verify Everything is Running
+### 6. Verify Everything is Running
 
 ```bash
 # Check service status
@@ -90,7 +98,7 @@ curl -X POST http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
   -d '{
-    "model": "openai/qwen3.6_27b",
+    "model": "DGX/Qwen3.6-27B",
     "messages": [{"role": "user", "content": "Say hello in one sentence."}],
     "max_tokens": 50
   }' | python3 -m json.tool | head -30
