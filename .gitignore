@@ -82,6 +82,7 @@ dist/
 .claude/shell-snapshots
 .claude/.claude.json
 .claude/settings.json
+.claude/session-env
 
 # Miscellaneous
 .local
