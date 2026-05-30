@@ -4,6 +4,3 @@
 [submodule "third-party/llama.cpp"]
 	path = third-party/llama.cpp
 	url = https://github.com/ggml-org/llama.cpp.git
-[submodule "models/lfm2.5-8b-a1b-nvfp4-gguf"]
-	path = models/lfm2.5-8b-a1b-nvfp4-gguf
-	url = https://huggingface.co/nilayparikh/LFM2.5-8B-A1B-NVFP4-GGUF
