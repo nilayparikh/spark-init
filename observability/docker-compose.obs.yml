@@ -26,9 +26,9 @@ services:
     container_name: mimir
     restart: "no"
     profiles:
+      - mimir
       - obs
       - all
-      - active
     labels:
       "init.profile_name": "obs"
     environment:
@@ -55,9 +55,9 @@ services:
     restart: "no"
     user: "0:0"
     profiles:
+      - loki
       - obs
       - all
-      - active
     labels:
       "init.profile_name": "obs"
     environment:
@@ -84,9 +84,9 @@ services:
     restart: "no"
     user: "0:0"
     profiles:
+      - alloy
       - obs
       - all
-      - active
     labels:
       "init.profile_name": "obs"
     command:
@@ -127,9 +127,9 @@ services:
     container_name: gpu-telemetry
     restart: "no"
     profiles:
+      - gpu-telemetry
       - obs
       - all
-      - active
     labels:
       "init.profile_name": "obs"
     gpus: all
@@ -146,9 +146,9 @@ services:
     container_name: cadvisor
     restart: "no"
     profiles:
+      - cadvisor
       - obs
       - all
-      - active
     labels:
       "init.profile_name": "obs"
     command:
@@ -179,9 +179,9 @@ services:
     restart: "no"
     user: "0:0"
     profiles:
+      - grafana
       - obs
       - all
-      - active
     labels:
       "init.profile_name": "obs"
     depends_on:

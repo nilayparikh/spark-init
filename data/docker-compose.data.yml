@@ -14,9 +14,9 @@ services:
     container_name: ${DATA_POSTGRES_CONTAINER_NAME}
     restart: "no"
     profiles:
+      - postgres
       - data
       - all
-      - active
     labels:
       "init.profile_name": "data"
     environment:

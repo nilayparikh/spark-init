@@ -98,8 +98,13 @@ WORKDIR /workspace
 # 8. Switch to the devcontainer user
 USER ${USERNAME}
 
-# 9. Add system metadata labels
-LABEL maintainer="Nilay Parikh <nilay.parikh@gmail.com>" \
-      version="0.1" \
-      description="A Docker image for .init development with Claude Code and PyTorch on NVIDIA DGX Spark." \
-      repository="https://github.com"
+# 9. Add OCI-compliant metadata labels
+LABEL org.opencontainers.image.title="claude-code" \
+      org.opencontainers.image.description="Claude Code dev container with NVIDIA PyTorch for DGX Spark" \
+      org.opencontainers.image.url="https://github.com/nilayparikh/spark-init" \
+      org.opencontainers.image.source="https://github.com/nilayparikh/spark-init" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.vendor="Nilay Parikh" \
+      org.opencontainers.image.authors="Nilay Parikh <nilay.parikh@gmail.com>" \
+      org.opencontainers.image.version="0.1" \
+      org.opencontainers.image.ref.name="v0.0.1"

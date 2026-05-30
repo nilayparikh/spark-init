@@ -8,13 +8,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Big-Picture Architecture
 
-Three layers, each independently composable through `COMPOSE_PROFILES`:
+Three layers, each independently composable through `COMPOSE_PROFILES`. Every service
+also has its own unique profile for fine-grained control:
 
-| Layer             | Directory        | Services                                    | Profile(s)                        |
-| ----------------- | ---------------- | ------------------------------------------- | --------------------------------- |
-| **Data**          | `data/`          | PostgreSQL                                  | `data`                            |
-| **Observability** | `observability/` | Mimir, Loki, Alloy, Grafana, DCGM, cAdvisor | `obs`                             |
-| **Interfaces**    | `interfaces/`    | LiteLLM proxy, llama.cpp backend            | `interface`, `llama-qwen-3-6-27b` |
+| Layer             | Directory        | Services                                    | Stack Profiles                 | Unique Profiles |
+| ----------------- | ---------------- | ------------------------------------------- | ------------------------------ | --------------- |
+| **Data**          | `data/`          | PostgreSQL                                  | `data`                         | `postgres`      |
+| **Observability** | `observability/` | Mimir, Loki, Alloy, Grafana, DCGM, cAdvisor | `obs`                          | `mimir`, `loki`, `alloy`, `grafana`, `gpu-telemetry`, `cadvisor` |
+| **Interfaces**    | `interfaces/`    | LiteLLM proxy, llama.cpp backend            | `interface`                    | `litellm`, `llama-qwen-3-6-27b`, `llama-qwen-3-6-35b-a3b` |
+| **Network**       | `network/`       | Cloudflare Tunnel                           | —                              | `cloudflared`  |
 
 Data flow: clients → LiteLLM proxy (`:4000`) → llama.cpp (`:8000`) → GPU. Alloy scrapes all services and streams to Mimir/Loki for Grafana visualization. All services share the `init_default` Docker network.
 
@@ -37,7 +39,7 @@ Data flow: clients → LiteLLM proxy (`:4000`) → llama.cpp (`:8000`) → GPU. 
 ### Start/Stop
 
 ```bash
-# Full stack (data + obs + interface + llama.cpp)
+# Full stack (all layers + both llama.cpp backends)
 docker compose up -d
 
 # Check status
@@ -49,17 +51,29 @@ docker compose down
 
 ### Profile Selection
 
+Each service has a unique profile. Stack profiles (`data`, `obs`, `interface`) activate
+all services in a layer. Use `all` to start everything.
+
 Edit `COMPOSE_PROFILES` in `.env`, then run `docker compose up -d`. Common shapes:
 
 ```
-# Full stack
-COMPOSE_PROFILES=data,obs,interface,llama-qwen-3-6-27b
+# Full stack (all layers + both llama.cpp backends)
+COMPOSE_PROFILES=data,obs,interface
+
+# Everything (shorthand)
+COMPOSE_PROFILES=all
 
 # Data + observability only
 COMPOSE_PROFILES=data,obs
 
-# Interface only (with data)
-COMPOSE_PROFILES=data,interface,llama-qwen-3-6-27b
+# LiteLLM + 27B only (no observability)
+COMPOSE_PROFILES=data,litellm,llama-qwen-3-6-27b
+
+# API proxy only (cloud models, no local llama.cpp)
+COMPOSE_PROFILES=data,litellm
+
+# Just a single service (e.g., PostgreSQL only)
+COMPOSE_PROFILES=postgres
 ```
 
 ### Endpoints
@@ -104,18 +118,23 @@ find scripts/ -name '*.py' -print0 | xargs -0 -I{} python3 -m py_compile {}
 GitHub Actions (`.github/workflows/`):
 
 - `lint.yml` — YAML, ShellCheck, Python syntax on push/PR to main
-- `docker-build.yml` — Build and push `llama-cpp-dgx` image to GHCR on push to main/tags
+- `docker-build-llama-cpp-dgx.yml` — Build and push `llama-cpp-dgx` image to GHCR on push to main/tags
+- `docker-build-claude-code.yml` — Build and push `claude-code` image to GHCR on push to main/tags
 - `deploy-docs.yml` — Deploy MkDocs site
 
-## Building the llama.cpp Docker Image
+## Building Docker Images
 
 ```bash
-# Build locally (arm64)
-docker build -t nilayparikh/llama-cpp-dgx:cuda13.1.2-b9222 \
-  -f interfaces/dockerfiles/Dockerfile interfaces/dockerfiles/
+# llama-cpp-dgx
+docker build -t ghcr.io/nilayparikh/llama-cpp-dgx:cuda13.1.2-b9222 \
+  -f docker/llama-cpp-dgx/Dockerfile .
+
+# claude-code
+docker build -t ghcr.io/nilayparikh/claude-code:v0.0.1 \
+  -f docker/claude-code/Dockerfile docker/claude-code/
 ```
 
-The image is also built by CI when `interfaces/dockerfiles/` changes.
+Each image is also built by CI when its `docker/<image>/` directory changes.
 
 ## `claude-code.sh`
 
@@ -161,7 +180,14 @@ This indexed catalog covers all source files, configuration, and documentation. 
 | `interfaces/config/litellm/providers/nvidia.yaml` | NVIDIA AI Endpoints |
 | `interfaces/config/litellm/providers/opencode-zen.yaml` | OpenCode Zen models |
 | `interfaces/config/qwen3.6/chat_template.jinja` | Jinja2 chat template for Qwen 3.6 (reasoning format) |
-| `interfaces/dockerfiles/Dockerfile` | llama.cpp CUDA Docker image (aarch64, CUDA 13.1.2) |
+
+### Docker Layer (`docker/`)
+
+| File | Purpose |
+| ---------------------------------------------------- | --------------------------------------------------------- |
+| `docker/llama-cpp-dgx/Dockerfile` | llama.cpp CUDA Docker image (aarch64, CUDA 13.1.2) |
+| `docker/claude-code/Dockerfile` | Claude Code dev container (NVIDIA PyTorch, aarch64) |
+| `docker/README.md` | Build instructions and OCI label reference |
 
 ### Observability Layer (`observability/`)
 
@@ -209,7 +235,8 @@ This indexed catalog covers all source files, configuration, and documentation. 
 | File | Purpose |
 | --------------------------------------------------------- | --------------------------------------------------------- |
 | `.github/workflows/lint.yml` | YAML lint, ShellCheck, Python syntax on push/PR |
-| `.github/workflows/docker-build.yml` | Build `llama-cpp-dgx` image and push to GHCR |
+| `.github/workflows/docker-build-llama-cpp-dgx.yml` | Build `llama-cpp-dgx` image and push to GHCR |
+| `.github/workflows/docker-build-claude-code.yml` | Build `claude-code` image and push to GHCR |
 | `.github/workflows/deploy-docs.yml` | Deploy MkDocs site to GitHub Pages |
 
 ## Submodules

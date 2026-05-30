@@ -27,6 +27,7 @@ services:
     container_name: ${LITELLM_CONTAINER_NAME:-litellm}
     restart: "no"
     profiles:
+      - litellm
       - interface
       - all
     labels:
@@ -97,11 +98,11 @@ services:
   # ──────────────────────────────────────────────────────────────────────────
   llama-qwen-3-6-27b:
     build:
-      context: ./dockerfiles
+      context: ../docker/llama-cpp-dgx
       dockerfile: Dockerfile
       args:
         LLAMA_CPP_TAG: ${LLAMA_CPP_TAG:-b9222}
-    image: ${LLAMA_QWEN_3_6_27B_IMAGE_REPO:-nilayparikh/llama-cpp-dgx}:cuda13.1.2-${LLAMA_CPP_TAG:-b9222}
+    image: ${LLAMA_QWEN_3_6_27B_IMAGE_REPO:-ghcr.io/nilayparikh/llama-cpp-dgx}:cuda13.1.2-${LLAMA_CPP_TAG:-b9222}
     container_name: ${LLAMA_QWEN_3_6_27B_CONTAINER_NAME:-llama-qwen-3-6-27b}
     restart: "on-failure"
     profiles:
@@ -202,11 +203,11 @@ services:
   # ──────────────────────────────────────────────────────────────────────────
   llama-qwen-3-6-35b-a3b:
     build:
-      context: ./dockerfiles
+      context: ../docker/llama-cpp-dgx
       dockerfile: Dockerfile
       args:
         LLAMA_CPP_TAG: ${LLAMA_CPP_TAG:-b9222}
-    image: ${LLAMA_QWEN_3_6_35B_A3B_IMAGE_REPO:-nilayparikh/llama-cpp-dgx}:cuda13.1.2-${LLAMA_CPP_TAG:-b9222}
+    image: ${LLAMA_QWEN_3_6_35B_A3B_IMAGE_REPO:-ghcr.io/nilayparikh/llama-cpp-dgx}:cuda13.1.2-${LLAMA_CPP_TAG:-b9222}
     container_name: ${LLAMA_QWEN_3_6_35B_A3B_CONTAINER_NAME:-llama-qwen-3-6-35b-a3b}
     restart: "on-failure"
     profiles:

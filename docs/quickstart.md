@@ -42,8 +42,9 @@ Edit `COMPOSE_PROFILES` in `.env` to choose what runs:
 
 | Profile | What starts | When to use |
 |---|---|---|
-| `data,obs,interface,llama-qwen-3-6-27b` | Full stack | Default — everything |
-| `data,interface` | LiteLLM proxy only | Cloud-only routing |
+| `data,obs,interface` | Full stack — both llama.cpp backends | Default — everything |
+| `data,litellm,llama-qwen-3-6-27b` | LiteLLM + 27B only | Single model inference |
+| `data,litellm` | LiteLLM proxy only | Cloud-only routing |
 | `data,obs` | Observability only | Monitor without inference |
 | `data` | PostgreSQL only | Just the database |
 

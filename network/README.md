@@ -32,12 +32,12 @@ docker network create init_default
 
 The `cloudflared` service provides secure external access to the stack (Grafana, LiteLLM, etc.) without opening firewall ports. Requires `CLOUDFLARE_TUNNEL_TOKEN` in `.env`.
 
-Activate with profile: `network` (or `all`).
+Activate with profile: `cloudflared` (or `all`).
 
 ```bash
 # .env
 CLOUDFLARE_TUNNEL_TOKEN=your-token-here
-COMPOSE_PROFILES=data,obs,interface,llama-qwen-3-6-27b,network
+COMPOSE_PROFILES=data,obs,interface,cloudflared
 ```
 
 ## DGX Spark Context

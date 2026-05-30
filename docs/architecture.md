@@ -70,11 +70,13 @@ docker network create init_default
 ## Profile Dependency Rules
 
 ```yaml
-data                    # just Postgres
-data + obs              # Postgres + Grafana stack
-data + interface        # Postgres + LiteLLM proxy
-data + obs + interface  # Postgres + Grafana + proxy (no local models)
-data + obs + interface + llama-qwen-3-6-27b   # full stack (default)
+data                        # just Postgres
+data + obs                  # Postgres + Grafana stack
+data + litellm              # Postgres + LiteLLM proxy (cloud models only)
+data + litellm + llama-qwen-3-6-27b  # Postgres + LiteLLM + 27B
+data + obs + interface      # Postgres + Grafana + proxy + both llama.cpp backends
+data + obs + litellm + llama-qwen-3-6-27b  # Postgres + Grafana + LiteLLM + 27B
+all                         # everything
 ```
 
 All `depends_on` conditions use health checks — Postgres must report `pg_isready` before Grafana or LiteLLM start.

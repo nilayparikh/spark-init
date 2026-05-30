@@ -2,40 +2,46 @@
 
 Custom Docker images for the `.init` stack on DGX Spark.
 
-## Contents
+## Images
 
-| Path | Purpose |
-|---|---|
-| `claude-code/Dockerfile` | Claude Code dev container (NVIDIA PyTorch base, aarch64) |
+| Image | Path | Purpose | GHCR |
+|-------|------|---------|------|
+| `llama-cpp-dgx` | `llama-cpp-dgx/Dockerfile` | llama.cpp CUDA inference server | `ghcr.io/nilayparikh/llama-cpp-dgx` |
+| `claude-code` | `claude-code/Dockerfile` | Claude Code dev container (NVIDIA PyTorch) | `ghcr.io/nilayparikh/claude-code` |
 
-## `docker/claude-code/`
-
-A PyTorch-based container for running Claude Code via `claude-code.sh`. It includes:
-
-- NVIDIA PyTorch 26.04 base (CUDA 13.1.2, aarch64)
-- Claude Code CLI (`@anthropic-ai/claude-code`)
-- Developer utilities: gh CLI, ripgrep, fd, ast-grep, difftastic, scc
-- Pre-configured environment variables for LiteLLM proxy routing
-
-### Building
+## Building Locally
 
 ```bash
-docker build -t nilayparikh/dgx-dev:v0.0.1 \
+# llama-cpp-dgx
+docker build -t ghcr.io/nilayparikh/llama-cpp-dgx:cuda13.1.2-b9222 \
+  -f docker/llama-cpp-dgx/Dockerfile .
+
+# claude-code
+docker build -t ghcr.io/nilayparikh/claude-code:v0.0.1 \
   -f docker/claude-code/Dockerfile docker/claude-code/
 ```
 
-### Why a Separate Container?
+## OCI Labels
 
-Running Claude Code inside a container ensures:
+All images include [OCI standard labels](https://github.com/opencontainers/image-spec/blob/main/annotations.md):
 
-1. **Isolated environment** — no dependency conflicts with host tools
-2. **Consistent routing** — `ANTHROPIC_BASE_URL` is hard-coded to point at the local LiteLLM proxy
-3. **GPU access** — `--gpus all` and `--network host` give the container full hardware access
+| Label | Value |
+|-------|-------|
+| `org.opencontainers.image.title` | Image short name |
+| `org.opencontainers.image.description` | What the image does |
+| `org.opencontainers.image.source` | GitHub repository URL |
+| `org.opencontainers.image.url` | Project URL |
+| `org.opencontainers.image.licenses` | MIT |
+| `org.opencontainers.image.vendor` | Nilay Parikh |
+| `org.opencontainers.image.authors` | Maintainer contact |
+| `org.opencontainers.image.version` | Git ref / version tag |
+| `org.opencontainers.image.revision` | Git commit SHA |
+| `org.opencontainers.image.created` | Build timestamp |
 
-### DGX Spark Notes
-
-The Dockerfile targets `linux/arm64` (aarch64) for DGX Spark's Grace CPU. All utility binaries are downloaded as `aarch64` builds. The NVIDIA PyTorch base image is optimized for Grace Blackwell.
+These are automatically injected by CI workflows via `docker/metadata-action`.
 
 ## Related
 
-- `interfaces/dockerfiles/Dockerfile` — llama.cpp CUDA build image (separate from this dev container)
+- `claude-code.sh` — launches the claude-code container through the local LiteLLM proxy
+- `interfaces/docker-compose.interface.yml` — builds the llama-cpp-dgx image for local inference
+- `scripts/litellm-claude-smoke-test.sh` — smoke test against the running container

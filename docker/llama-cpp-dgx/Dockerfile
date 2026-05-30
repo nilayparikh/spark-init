@@ -67,3 +67,14 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD ["curl", "-f", "http://localhost:8080/health"]
 
 ENTRYPOINT ["./llama-server"]
+
+# ── OCI Labels ──────────────────────────────────────────────────────────────
+LABEL org.opencontainers.image.title="llama-cpp-dgx" \
+      org.opencontainers.image.description="llama.cpp CUDA inference server for NVIDIA DGX Spark (Grace Blackwell)" \
+      org.opencontainers.image.url="https://github.com/nilayparikh/spark-init" \
+      org.opencontainers.image.source="https://github.com/nilayparikh/spark-init" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.vendor="Nilay Parikh" \
+      org.opencontainers.image.authors="Nilay Parikh <nilay.parikh@gmail.com>" \
+      org.opencontainers.image.version="${LLAMA_CPP_TAG:-b9222}" \
+      org.opencontainers.image.ref.name="cuda13.1.2-${LLAMA_CPP_TAG:-b9222}"

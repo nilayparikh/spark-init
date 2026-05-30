@@ -4,7 +4,7 @@
 # cloudflared – Cloudflare Tunnel for exposing the stack externally.
 #   Requires CLOUDFLARE_TUNNEL_TOKEN in .env.
 #   Enables secure access to Grafana, LiteLLM, etc. without opening firewall ports.
-#   Activate with profile: network (or "all").
+#   Activate with profile: cloudflared (or "all").
 # ──────────────────────────────────────────────────────────────────────────────
 
 services:
@@ -13,12 +13,10 @@ services:
     container_name: cloudflared
     restart: unless-stopped
     profiles:
-      - network
+      - cloudflared
       - all
-      - tunnel
-      - cloudflare
     labels:
-      "init.profile_name": "network"
+      "init.profile_name": "cloudflared"
     command:
       - tunnel
       - --no-autoupdate

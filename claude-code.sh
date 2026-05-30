@@ -6,8 +6,8 @@ set -e
 # ==========================================
 # CONFIGURATION VARIABLES
 # ==========================================
-REGISTRY="nilayparikh"
-IMAGE_NAME="dgx-dev"
+REGISTRY="ghcr.io/nilayparikh"
+IMAGE_NAME="claude-code"
 VERSION="v0.0.1"
 CONTAINER_NAME="claude-dev-workspace"
 WORKSPACE_DIR="$(pwd)"

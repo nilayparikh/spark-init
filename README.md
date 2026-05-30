@@ -25,11 +25,11 @@ We use **NVFP4 quantization** (NVIDIA ModelOpt) with **MTP speculative decoding*
 
 ## Three Layers
 
-| Layer | Directory | Services | Profile |
+| Layer | Directory | Services | Stack Profile |
 |---|---|---|---|
 | **Data** | `data/` | PostgreSQL | `data` |
 | **Observability** | `observability/` | Alloy, Mimir, Loki, Grafana, DCGM, cAdvisor | `obs` |
-| **Interfaces** | `interfaces/` | LiteLLM proxy, llama.cpp (27B + 35B A3B) | `interface`, `llama-qwen-*-*` |
+| **Interfaces** | `interfaces/` | LiteLLM proxy, llama.cpp (27B + 35B A3B) | `interface` |
 
 All share the `init_default` network. Each layer has its own `README.md` for details.
 
@@ -46,12 +46,33 @@ docker compose up -d
 
 ## Profile Sets
 
+The top-level `COMPOSE_PROFILES` controls which services start. Each service also
+has a unique profile for fine-grained control.
+
 | Profile Set | What You Get |
 |---|---|
-| `data,obs,interface,llama-qwen-3-6-27b` | Full stack (default) |
+| `all` | Everything — full stack |
+| `data,obs,interface` | Full stack w/ both llama.cpp backends (default) |
 | `data,obs` | Telemetry only (no inference) |
-| `data,interface` | API proxy only (cloud models) |
-| `data,obs,interface,llama-qwen-3-6-27b,llama-qwen-3-6-35b-a3b` | Full stack + 35B model |
+| `data,litellm,llama-qwen-3-6-27b` | LiteLLM + 27B only |
+| `data,litellm` | API proxy only (cloud models) |
+| `data` | Just PostgreSQL |
+
+**Per-service profiles** — use alongside stack profiles for fine-grained control:
+
+| Service | Profile |
+|---|---|
+| PostgreSQL | `postgres` |
+| Mimir | `mimir` |
+| Loki | `loki` |
+| Alloy | `alloy` |
+| GPU Telemetry (DCGM) | `gpu-telemetry` |
+| cAdvisor | `cadvisor` |
+| Grafana | `grafana` |
+| LiteLLM | `litellm` |
+| llama.cpp 27B | `llama-qwen-3-6-27b` |
+| llama.cpp 35B A3B | `llama-qwen-3-6-35b-a3b` |
+| Cloudflare Tunnel | `cloudflared` |
 
 ## Endpoints
 

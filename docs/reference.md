@@ -38,13 +38,13 @@ The only custom image is `llama-cpp-dgx`, built from `interfaces/dockerfiles/Doc
 
 ## Ports
 
-| Port | Service | Profile |
-|---|---|---|
-| 3000 | Grafana | `obs` |
-| 4000 | LiteLLM proxy | `interface` |
-| 5432 | PostgreSQL | `data` |
-| 8000 | llama.cpp 27B | `llama-qwen-3-6-27b` |
-| 8001 | llama.cpp 35B A3B | `llama-qwen-3-6-35b-a3b` |
+| Port | Service | Stack Profile | Unique Profile |
+|---|---|---|---|
+| 3000 | Grafana | `obs` | `grafana` |
+| 4000 | LiteLLM proxy | `interface` | `litellm` |
+| 5432 | PostgreSQL | `data` | `postgres` |
+| 8000 | llama.cpp 27B | `interface` | `llama-qwen-3-6-27b` |
+| 8001 | llama.cpp 35B A3B | `interface` | `llama-qwen-3-6-35b-a3b` |
 
 ## Scripts
 
