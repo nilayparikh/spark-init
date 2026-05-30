@@ -1,0 +1,67 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker *)",
+      "Bash(yamllint *)",
+      "Bash(shellcheck *)",
+      "Bash(python3 -m py_compile *)",
+      "Bash(nvidia-smi)",
+      "Bash(scripts/*)"
+    ],
+    "defaultMode": "bypassPermissions",
+    "skipDangerousModePermissionPrompt": true
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/protect-env.sh",
+            "args": [],
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/run-linter.sh",
+            "args": [],
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  },
+  "theme": "dark",
+  "autoMode": {
+    "allow": [
+      "$defaults",
+      "Writing or updating configuration structures inside the .claude directory is permitted"
+    ],
+    "environment": [
+      "$defaults"
+    ]
+  },
+  "telemetry": "off",
+  "projects": {
+    "/workspace": {
+      "hasTrustDialogAccepted": true,
+      "allowedTools": [
+        "Bash",
+        "Read",
+        "Write",
+        "Edit",
+        "Glob",
+        "LS"
+      ]
+    }
+  },
+  "model": "dgx-qwen3-6-27b-swe"
+}

@@ -1,0 +1,97 @@
+model_list:
+  - model_name: deepseek-openai-deepseek-v4-flash
+    litellm_params: &deepseek_flash_upstream_params
+      model: openai/deepseek-v4-flash
+      api_base: os.environ/DEEPSEEK_BASE_URL
+      api_key: os.environ/DEEPSEEK_API_KEY
+      timeout: 300
+      drop_params: true
+      extra_body:
+        reasoning_effort: high
+    model_info: &deepseek_flash_base_info
+      id: "deepseek-openai-deepseek-v4-flash"
+      db_model: false
+      supports_reasoning: true
+      mode: chat
+      context_window: 1000000
+      max_tokens: 1000000
+      max_input_tokens: 616000
+      max_output_tokens: 384000
+      contextWindow: 1000000
+      maxOutputTokens: 384000
+      limit:
+        context: 1000000
+        output: 384000
+      supports_system_messages: true
+      supports_native_streaming: true
+      supports_vision: false
+      input_cost_per_token: 0.00000014
+      output_cost_per_token: 0.00000028
+      supported_openai_params: &deepseek_supported_openai_params
+        - tools
+        - tool_choice
+        - parallel_tool_calls
+        - response_format
+        - max_tokens
+        - max_completion_tokens
+        - stream
+        - stream_options
+        - temperature
+        - top_p
+        - stop
+
+  - model_name: deepseek-anthropic-deepseek-v4-flash
+    litellm_params: &deepseek_flash_anthropic_route_params
+      <<: *deepseek_flash_upstream_params
+    model_info:
+      <<: *deepseek_flash_base_info
+      id: "deepseek-anthropic-deepseek-v4-flash"
+
+  - model_name: claude-haiku-4-5-20251001
+    litellm_params:
+      <<: *deepseek_flash_anthropic_route_params
+    model_info:
+      <<: *deepseek_flash_base_info
+      id: "claude-haiku-4-5-20251001"
+
+  - model_name: claude-haiku-4-5
+    litellm_params:
+      <<: *deepseek_flash_anthropic_route_params
+    model_info:
+      <<: *deepseek_flash_base_info
+      id: "claude-haiku-4-5"
+
+  - model_name: deepseek-openai-deepseek-v4-pro
+    litellm_params: &deepseek_pro_upstream_params
+      model: openai/deepseek-v4-pro
+      api_base: os.environ/DEEPSEEK_BASE_URL
+      api_key: os.environ/DEEPSEEK_API_KEY
+      timeout: 300
+      drop_params: true
+    model_info: &deepseek_pro_base_info
+      id: "deepseek-openai-deepseek-v4-pro"
+      db_model: false
+      supports_reasoning: false
+      mode: chat
+      context_window: 1000000
+      max_tokens: 1000000
+      max_input_tokens: 616000
+      max_output_tokens: 384000
+      contextWindow: 1000000
+      maxOutputTokens: 384000
+      limit:
+        context: 1000000
+        output: 384000
+      supports_system_messages: true
+      supports_native_streaming: true
+      supports_vision: false
+      input_cost_per_token: 0.00000174
+      output_cost_per_token: 0.00000348
+      supported_openai_params: *deepseek_supported_openai_params
+
+  - model_name: deepseek-anthropic-deepseek-v4-pro
+    litellm_params: &deepseek_pro_anthropic_route_params
+      <<: *deepseek_pro_upstream_params
+    model_info:
+      <<: *deepseek_pro_base_info
+      id: "deepseek-anthropic-deepseek-v4-pro"

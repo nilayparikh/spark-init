@@ -1,0 +1,33 @@
+# Root LiteLLM config. Provider catalogs live under providers/.
+# YAML anchors stay local to each file because aliases do not span files.
+include:
+  - providers/azure-foundry.yaml
+  - providers/dgx.yaml
+  - providers/nvidia.yaml
+  - providers/deepseek.yaml
+
+general_settings:
+  database_url: os.environ/DATABASE_URL
+  store_model_in_db: true
+  store_prompts_in_spend_logs: true
+
+router_settings:
+  num_retries: 5
+  retry_after: 0
+  retry_policy:
+    AuthenticationErrorRetries: 0
+    TimeoutErrorRetries: 5
+    RateLimitErrorRetries: 5
+    ContentPolicyViolationErrorRetries: 0
+    InternalServerErrorRetries: 5
+
+litellm_settings:
+  always_include_stream_usage: true
+  drop_params: true
+  redact_user_api_key_info: true
+  turn_off_message_logging: false
+  json_logs: true
+  use_chat_completions_url_for_anthropic_messages: true
+  callbacks:
+    - prometheus
+  require_auth_for_metrics_endpoint: false

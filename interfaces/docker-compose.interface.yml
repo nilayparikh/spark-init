@@ -1,0 +1,242 @@
+services:
+  litellm:
+    image: ${LITELLM_IMAGE:-docker.litellm.ai/berriai/litellm:latest}
+    container_name: ${LITELLM_CONTAINER_NAME:-litellm}
+    restart: "no"
+    profiles:
+      - interface
+      - all
+    labels:
+      "init.profile_name": "interface"
+    command:
+      - --config
+      - /app/litellm-config/litellm-config.yaml
+      - --port
+      - "${LITELLM_PORT:-4000}"
+      - --host
+      - "${LITELLM_BIND_HOST:-0.0.0.0}"
+    ports:
+      - "${LITELLM_BIND_HOST:-0.0.0.0}:${LITELLM_PORT:-4000}:${LITELLM_PORT:-4000}"
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    environment:
+      LITELLM_LOG_LEVEL: ${LITELLM_LOG_LEVEL:-INFO}
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:-sk-interface-ui-local}
+      NO_DOCS: ${LITELLM_NO_DOCS:-True}
+      NO_REDOC: ${LITELLM_NO_REDOC:-True}
+      DATABASE_URL: ${INTERFACE_DATABASE_URL:-postgresql://litellm_interface:litellm_interface_local@postgres:5432/litellm_interface}
+      QWEN3_6_27B_BASE_URL: ${INTERFACE_QWEN_3_6_27B_BASE_URL:-http://host.docker.internal:8000/v1}
+      QWEN3_6_27B_API_KEY: ${INTERFACE_QWEN_3_6_27B_API_KEY:-sk-dummy}
+      QWEN3_6_27B_SERVING_MODEL: ${INTERFACE_QWEN_3_6_27B_MODEL:-openai/qwen3.6_27b}
+      QWEN3_6_35B_A3B_BASE_URL: ${INTERFACE_QWEN_3_6_35B_A3B_BASE_URL:-http://host.docker.internal:8001/v1}
+      QWEN3_6_35B_A3B_API_KEY: ${INTERFACE_QWEN_3_6_35B_A3B_API_KEY:-sk-dummy}
+      QWEN3_6_35B_A3B_SERVING_MODEL: ${INTERFACE_QWEN_3_6_35B_A3B_MODEL:-openai/qwen3.6_35b_a3b}
+      MICROSOFT_FOUNDRY_API_BASE: ${MICROSOFT_FOUNDRY_API_BASE:-https://tuts.services.ai.azure.com/openai/v1}
+      MICROSOFT_FOUNDRY_API_KEY: ${MICROSOFT_FOUNDRY_API_KEY:-}
+      AZURE_ORCHESTRATOR_API_BASE: ${AZURE_ORCHESTRATOR_API_BASE:-${MICROSOFT_FOUNDRY_API_BASE:-https://tuts.services.ai.azure.com/openai/v1}}
+      AZURE_ORCHESTRATOR_API_KEY: ${AZURE_ORCHESTRATOR_API_KEY:-${MICROSOFT_FOUNDRY_API_KEY:-}}
+      AZURE_ORCHESTRATOR_MODEL: ${AZURE_ORCHESTRATOR_MODEL:-openai/Kimi-K2.6-1}
+      NVIDIA_BASE_URL: ${NVIDIA_BASE_URL:-https://integrate.api.nvidia.com/v1}
+      NVIDIA_API_KEY: ${NVIDIA_API_KEY:-}
+      DEEPSEEK_BASE_URL: ${DEEPSEEK_BASE_URL:-https://api.deepseek.com}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+    volumes:
+      - ./config/litellm:/app/litellm-config:ro
+
+  llama-qwen-3-6-27b:
+    build:
+      context: ./dockerfiles
+      dockerfile: Dockerfile
+      args:
+        LLAMA_CPP_TAG: ${LLAMA_CPP_TAG:-b9222}
+    image: ${LLAMA_QWEN_3_6_27B_IMAGE_REPO:-nilayparikh/llama-cpp-dgx}:cuda13.1.2-${LLAMA_CPP_TAG:-b9222}
+    container_name: ${LLAMA_QWEN_3_6_27B_CONTAINER_NAME:-llama-qwen-3-6-27b}
+    restart: "on-failure"
+    profiles:
+      - llama-qwen-3-6-27b
+      - interface
+      - all
+    labels:
+      "init.profile_name": "llama-qwen-3-6-27b"
+    platform: linux/arm64
+    init: true
+    cap_add:
+      - IPC_LOCK
+    runtime: nvidia
+    ulimits:
+      memlock: -1
+    environment:
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+      CUDA_LAUNCH_BLOCKING: 1
+    ports:
+      - "${LLAMA_QWEN_3_6_27B_BIND_HOST:-0.0.0.0}:${LLAMA_QWEN_3_6_27B_HOST_PORT:-8000}:${LLAMA_QWEN_3_6_27B_CONTAINER_PORT:-8080}"
+    volumes:
+      - ${LLAMA_QWEN_3_6_27B_GGUF_MODEL_PATH:-../models/qwen3.6-27b-text-nvfp4-mtp/qwen3.6-27b-text-nvfp4-mtp.gguf}:/models/model.gguf:ro
+      - ./config/qwen3.6/chat_template.jinja:/workspace/chat_template.jinja:ro
+    command:
+      - "-m"
+      - "/models/model.gguf"
+      - "-a"
+      - "qwen3.6_27b"
+      - "--jinja"
+      - "--chat-template-file"
+      - "/workspace/chat_template.jinja"
+      - "--reasoning"
+      - "on"
+      - "--reasoning-format"
+      - "deepseek"
+      - "--reasoning-budget"
+      - "8192"
+      - "--min-p"
+      - "0.05"
+      - "--spec-type"
+      - "draft-mtp,ngram-mod"
+      - "--spec-draft-n-max"
+      - "2"
+      - "--spec-draft-p-min"
+      - "0.88"
+      - "--spec-draft-ngl"
+      - "99"
+      - "-ctk"
+      - "f16"
+      - "-ctv"
+      - "f16"
+      - "-ngl"
+      - "all"
+      - "-fa"
+      - "on"
+      - "-sm"
+      - "none"
+      - "-fit"
+      - "off"
+      - "-c"
+      - "131072"
+      - "-b"
+      - "2048"
+      - "-ub"
+      - "512"
+      - "--parallel"
+      - "1"
+      - "--cont-batching"
+      - "--cache-prompt"
+      - "--swa-full"
+      - "-t"
+      - "8"
+      - "-tb"
+      - "8"
+      - "--mlock"
+      - "--port"
+      - "8080"
+      - "--host"
+      - "0.0.0.0"
+      - "--metrics"
+      - "--timeout"
+      - "120"
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  llama-qwen-3-6-35b-a3b:
+    build:
+      context: ./dockerfiles
+      dockerfile: Dockerfile
+      args:
+        LLAMA_CPP_TAG: ${LLAMA_CPP_TAG:-b9222}
+    image: ${LLAMA_QWEN_3_6_35B_A3B_IMAGE_REPO:-nilayparikh/llama-cpp-dgx}:cuda13.1.2-${LLAMA_CPP_TAG:-b9222}
+    container_name: ${LLAMA_QWEN_3_6_35B_A3B_CONTAINER_NAME:-llama-qwen-3-6-35b-a3b}
+    restart: "on-failure"
+    profiles:
+      - llama-qwen-3-6-35b-a3b
+      - interface
+      - all
+    labels:
+      "init.profile_name": "llama-qwen-3-6-35b-a3b"
+    platform: linux/arm64
+    init: true
+    cap_add:
+      - IPC_LOCK
+    runtime: nvidia
+    ulimits:
+      memlock: -1
+    environment:
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+      CUDA_LAUNCH_BLOCKING: 1
+    ports:
+      - "${LLAMA_QWEN_3_6_35B_A3B_BIND_HOST:-0.0.0.0}:${LLAMA_QWEN_3_6_35B_A3B_HOST_PORT:-8001}:${LLAMA_QWEN_3_6_35B_A3B_CONTAINER_PORT:-8080}"
+    volumes:
+      - ${LLAMA_QWEN_3_6_35B_A3B_GGUF_MODEL_PATH:-../models/.test/qwen3.6-35b-a3b-nvfp4-mtp.gguf}:/models/model.gguf:ro
+      - ./config/qwen3.6/chat_template.jinja:/workspace/chat_template.jinja:ro
+    command:
+      - "-m"
+      - "/models/model.gguf"
+      - "-a"
+      - "qwen3.6_35b_a3b"
+      - "--jinja"
+      - "--chat-template-file"
+      - "/workspace/chat_template.jinja"
+      - "--reasoning"
+      - "on"
+      - "--reasoning-format"
+      - "deepseek"
+      - "--reasoning-budget"
+      - "8192"
+      - "--min-p"
+      - "0.05"
+      - "--spec-type"
+      - "draft-mtp,ngram-mod"
+      - "--spec-draft-n-max"
+      - "2"
+      - "--spec-draft-p-min"
+      - "0.88"
+      - "--spec-draft-ngl"
+      - "99"
+      - "-ctk"
+      - "f16"
+      - "-ctv"
+      - "f16"
+      - "-ngl"
+      - "all"
+      - "-fa"
+      - "on"
+      - "-sm"
+      - "none"
+      - "-fit"
+      - "off"
+      - "-c"
+      - "262144"
+      - "-b"
+      - "2048"
+      - "-ub"
+      - "512"
+      - "--parallel"
+      - "1"
+      - "--cont-batching"
+      - "--cache-prompt"
+      - "--swa-full"
+      - "-t"
+      - "8"
+      - "-tb"
+      - "8"
+      - "--mlock"
+      - "--port"
+      - "8080"
+      - "--host"
+      - "0.0.0.0"
+      - "--metrics"
+      - "--timeout"
+      - "120"
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

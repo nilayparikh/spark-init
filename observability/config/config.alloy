@@ -1,0 +1,1011 @@
+prometheus.exporter.unix "host" {
+  procfs_path = "/host/proc"
+  sysfs_path  = "/host/sys"
+  rootfs_path = "/host/root"
+
+  disable_collectors = ["mdadm", "zfs"]
+}
+
+prometheus.relabel "host_metrics" {
+  forward_to = [prometheus.remote_write.mimir.receiver]
+
+  rule {
+    target_label = "cluster_tenant"
+    replacement  = "spark_dgx_core"
+  }
+
+  rule {
+    target_label = "environment"
+    replacement  = "personal"
+  }
+
+  rule {
+    target_label = "stack"
+    replacement  = "observability-core"
+  }
+
+  rule {
+    target_label = "site"
+    replacement  = "barsana"
+  }
+
+  rule {
+    target_label = "role"
+    replacement  = "spark-dgx"
+  }
+
+  rule {
+    target_label = "host"
+    replacement  = "barsana"
+  }
+
+  rule {
+    target_label = "instance"
+    replacement  = "barsana"
+  }
+
+  rule {
+    target_label = "job"
+    replacement  = "machine-linux"
+  }
+}
+
+prometheus.scrape "host" {
+  targets         = prometheus.exporter.unix.host.targets
+  forward_to      = [prometheus.relabel.host_metrics.receiver]
+  job_name        = "host-unix"
+  scrape_interval = "5s"
+  scrape_timeout  = "4s"
+}
+
+prometheus.relabel "gpu_metrics" {
+  forward_to = [prometheus.remote_write.mimir.receiver]
+
+  rule {
+    target_label = "cluster_tenant"
+    replacement  = "spark_dgx_core"
+  }
+
+  rule {
+    target_label = "environment"
+    replacement  = "personal"
+  }
+
+  rule {
+    target_label = "stack"
+    replacement  = "observability-core"
+  }
+
+  rule {
+    target_label = "site"
+    replacement  = "barsana"
+  }
+
+  rule {
+    target_label = "role"
+    replacement  = "spark-dgx"
+  }
+
+  rule {
+    target_label = "host"
+    replacement  = "barsana"
+  }
+
+  rule {
+    target_label = "instance"
+    replacement  = "barsana"
+  }
+
+  rule {
+    target_label = "job"
+    replacement  = "machine-gpu"
+  }
+}
+
+prometheus.scrape "gpu" {
+  targets = [
+    {
+      __address__ = "gpu-telemetry:9400",
+    },
+  ]
+
+  forward_to      = [prometheus.relabel.gpu_metrics.receiver]
+  job_name        = "gpu-dcgm"
+  scrape_interval = "5s"
+  scrape_timeout  = "4s"
+}
+
+prometheus.relabel "docker_metrics" {
+  forward_to = [prometheus.remote_write.mimir.receiver]
+
+  rule {
+    target_label = "cluster_tenant"
+    replacement  = "spark_dgx_core"
+  }
+
+  rule {
+    target_label = "environment"
+    replacement  = "personal"
+  }
+
+  rule {
+    target_label = "stack"
+    replacement  = "observability-core"
+  }
+
+  rule {
+    target_label = "site"
+    replacement  = "barsana"
+  }
+
+  rule {
+    target_label = "role"
+    replacement  = "spark-dgx"
+  }
+
+  rule {
+    target_label = "host"
+    replacement  = "barsana"
+  }
+
+  rule {
+    target_label = "instance"
+    replacement  = "barsana-docker"
+  }
+
+  rule {
+    target_label = "job"
+    replacement  = "machine-docker"
+  }
+
+  rule {
+    target_label = "telemetry_scope"
+    replacement  = "docker"
+  }
+
+  rule {
+    source_labels = ["name"]
+    regex         = "/?(.*)"
+    target_label  = "container_name"
+    replacement   = "$1"
+  }
+
+  rule {
+    source_labels = ["container_name"]
+    regex         = "(.+)"
+    target_label  = "service_name"
+    replacement   = "$1"
+  }
+
+  rule {
+    source_labels = ["container_label_com_docker_compose_project"]
+    regex         = "(.+)"
+    target_label  = "compose_project"
+    replacement   = "$1"
+  }
+
+  rule {
+    source_labels = ["container_label_init_profile_name"]
+    regex         = "(.+)"
+    target_label  = "profile_name"
+    replacement   = "$1"
+  }
+
+  rule {
+    source_labels = ["container_label_com_docker_compose_service"]
+    regex         = "(.+)"
+    target_label  = "service_name"
+    replacement   = "$1"
+  }
+
+  rule {
+    action = "labeldrop"
+    regex  = "container_label_.*|id|name"
+  }
+}
+
+prometheus.scrape "docker" {
+  targets = [
+    {
+      __address__ = "cadvisor:8080",
+    },
+  ]
+
+  forward_to      = [prometheus.relabel.docker_metrics.receiver]
+  job_name        = "docker-cadvisor"
+  scrape_interval = "15s"
+  scrape_timeout  = "10s"
+}
+
+prometheus.relabel "litellm_metrics" {
+  forward_to = [prometheus.remote_write.mimir.receiver]
+
+  rule {
+    target_label = "cluster_tenant"
+    replacement  = "spark_dgx_core"
+  }
+
+  rule {
+    target_label = "environment"
+    replacement  = "personal"
+  }
+
+  rule {
+    target_label = "stack"
+    replacement  = "observability-core"
+  }
+
+  rule {
+    target_label = "site"
+    replacement  = "barsana"
+  }
+
+  rule {
+    target_label = "role"
+    replacement  = "spark-dgx"
+  }
+
+  rule {
+    target_label = "host"
+    replacement  = "barsana"
+  }
+
+  rule {
+    target_label = "instance"
+    replacement  = "llama-mtp-local"
+  }
+
+  rule {
+    target_label = "job"
+    replacement  = "interface-llm"
+  }
+
+  rule {
+    target_label = "provider_family"
+    replacement  = "litellm"
+  }
+
+  rule {
+    target_label = "interface_name"
+    replacement  = "llama-mtp"
+  }
+
+  rule {
+    target_label = "profile_name"
+    replacement  = "interface"
+  }
+
+  rule {
+    target_label = "interface_instance"
+    replacement  = "llama-mtp-local"
+  }
+
+  rule {
+    target_label = "service_name"
+    replacement  = "litellm"
+  }
+
+  rule {
+    target_label = "model_alias"
+    replacement  = "qwen3.6_27b"
+  }
+
+  rule {
+    target_label = "telemetry_scope"
+    replacement  = "interface"
+  }
+
+  rule {
+    action = "labeldrop"
+    regex  = "client_ip|end_user|hashed_api_key|api_key_alias|org_alias|org_id|team|team_alias|user|user_agent|user_email"
+  }
+}
+
+prometheus.scrape "litellm" {
+  targets = discovery.relabel.litellm_metrics_target.output
+
+  forward_to      = [prometheus.relabel.litellm_metrics.receiver]
+  job_name        = "litellm-interface"
+  metrics_path    = "/metrics/"
+  scrape_interval = "30s"
+  scrape_timeout  = "25s"
+}
+
+prometheus.relabel "llamacpp_metrics" {
+  forward_to = [prometheus.remote_write.mimir.receiver]
+
+  rule {
+    target_label = "cluster_tenant"
+    replacement  = "spark_dgx_core"
+  }
+
+  rule {
+    target_label = "environment"
+    replacement  = "personal"
+  }
+
+  rule {
+    target_label = "stack"
+    replacement  = "observability-core"
+  }
+
+  rule {
+    target_label = "site"
+    replacement  = "barsana"
+  }
+
+  rule {
+    target_label = "role"
+    replacement  = "spark-dgx"
+  }
+
+  rule {
+    target_label = "host"
+    replacement  = "barsana"
+  }
+
+  rule {
+    target_label = "instance"
+    replacement  = "llama-server:8080"
+  }
+
+  rule {
+    target_label = "job"
+    replacement  = "interface-llm"
+  }
+
+  rule {
+    target_label = "provider_family"
+    replacement  = "llamacpp"
+  }
+
+  rule {
+    target_label = "interface_name"
+    replacement  = "llama-mtp"
+  }
+
+  rule {
+    target_label = "profile_name"
+    replacement  = "llama-qwen-3-6-27b"
+  }
+
+  rule {
+    target_label = "interface_instance"
+    replacement  = "llama-mtp-local"
+  }
+
+  rule {
+    target_label = "service_name"
+    replacement  = "llama-server"
+  }
+
+  rule {
+    target_label = "model_alias"
+    replacement  = "qwen3.6_27b"
+  }
+
+  rule {
+    target_label = "telemetry_scope"
+    replacement  = "interface"
+  }
+}
+
+prometheus.scrape "llamacpp" {
+  targets = discovery.relabel.llamacpp_metrics_target.output
+
+  forward_to      = [prometheus.relabel.llamacpp_metrics.receiver]
+  job_name        = "llamacpp-native"
+  scrape_interval = "15s"
+  scrape_timeout  = "10s"
+}
+
+prometheus.relabel "vllm_primary_metrics" {
+  forward_to = [prometheus.remote_write.mimir.receiver]
+
+  rule {
+    target_label = "cluster_tenant"
+    replacement  = "spark_dgx_core"
+  }
+
+  rule {
+    target_label = "environment"
+    replacement  = "personal"
+  }
+
+  rule {
+    target_label = "stack"
+    replacement  = "observability-core"
+  }
+
+  rule {
+    target_label = "site"
+    replacement  = "barsana"
+  }
+
+  rule {
+    target_label = "role"
+    replacement  = "spark-dgx"
+  }
+
+  rule {
+    target_label = "host"
+    replacement  = "barsana"
+  }
+
+  rule {
+    target_label = "instance"
+    replacement  = "vllm-primary:8000"
+  }
+
+  rule {
+    target_label = "service_name"
+    replacement  = "vllm"
+  }
+
+  rule {
+    target_label = "profile_name"
+    replacement  = "vllm-qwen-3-6-27b"
+  }
+
+  rule {
+    target_label = "provider_family"
+    replacement  = "vllm"
+  }
+
+  rule {
+    target_label = "telemetry_scope"
+    replacement  = "inference"
+  }
+
+  rule {
+    target_label = "vllm_node_role"
+    replacement  = "primary"
+  }
+
+  rule {
+    target_label = "vllm_listener_port"
+    replacement  = "8000"
+  }
+}
+
+prometheus.scrape "vllm_primary" {
+  targets = discovery.relabel.vllm_primary_metrics_target.output
+
+  forward_to      = [prometheus.relabel.vllm_primary_metrics.receiver]
+  job_name        = "vllm-primary"
+  scrape_interval = "15s"
+  scrape_timeout  = "10s"
+}
+
+prometheus.relabel "vllm_secondary_metrics" {
+  forward_to = [prometheus.remote_write.mimir.receiver]
+
+  rule {
+    target_label = "cluster_tenant"
+    replacement  = "spark_dgx_core"
+  }
+
+  rule {
+    target_label = "environment"
+    replacement  = "personal"
+  }
+
+  rule {
+    target_label = "stack"
+    replacement  = "observability-core"
+  }
+
+  rule {
+    target_label = "site"
+    replacement  = "barsana"
+  }
+
+  rule {
+    target_label = "role"
+    replacement  = "spark-dgx"
+  }
+
+  rule {
+    target_label = "host"
+    replacement  = "barsana"
+  }
+
+  rule {
+    target_label = "instance"
+    replacement  = "vllm-secondary:8001"
+  }
+
+  rule {
+    target_label = "service_name"
+    replacement  = "vllm"
+  }
+
+  rule {
+    target_label = "profile_name"
+    replacement  = "vllm-qwen-3-6-35b-a3b"
+  }
+
+  rule {
+    target_label = "provider_family"
+    replacement  = "vllm"
+  }
+
+  rule {
+    target_label = "telemetry_scope"
+    replacement  = "inference"
+  }
+
+  rule {
+    target_label = "vllm_node_role"
+    replacement  = "secondary"
+  }
+
+  rule {
+    target_label = "vllm_listener_port"
+    replacement  = "8001"
+  }
+}
+
+prometheus.scrape "vllm_secondary" {
+  targets = discovery.relabel.vllm_secondary_metrics_target.output
+
+  forward_to      = [prometheus.relabel.vllm_secondary_metrics.receiver]
+  job_name        = "vllm-secondary"
+  scrape_interval = "15s"
+  scrape_timeout  = "10s"
+}
+
+prometheus.remote_write "mimir" {
+  endpoint {
+    url = "http://mimir:9009/api/v1/push"
+  }
+}
+
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+discovery.relabel "litellm_metrics_target" {
+  targets = discovery.docker.containers.targets
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_project"]
+    action        = "keep"
+    regex         = "init"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    action        = "keep"
+    regex         = "litellm"
+  }
+
+  rule {
+    target_label = "__address__"
+    replacement  = "litellm:4000"
+  }
+}
+
+discovery.relabel "llamacpp_metrics_target" {
+  targets = discovery.docker.containers.targets
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_project"]
+    action        = "keep"
+    regex         = "init"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    action        = "keep"
+    regex         = "llama-qwen-3-6-27b"
+  }
+
+  rule {
+    target_label = "__address__"
+    replacement  = "llama-qwen-3-6-27b:8080"
+  }
+}
+
+discovery.relabel "vllm_primary_metrics_target" {
+  targets = discovery.docker.containers.targets
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_project"]
+    action        = "keep"
+    regex         = "init"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    action        = "keep"
+    regex         = "vllm-qwen-3-6-27b"
+  }
+
+  rule {
+    target_label = "__address__"
+    replacement  = "host.docker.internal:8000"
+  }
+}
+
+discovery.relabel "vllm_secondary_metrics_target" {
+  targets = discovery.docker.containers.targets
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_project"]
+    action        = "keep"
+    regex         = "init"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    action        = "keep"
+    regex         = "vllm-qwen-3-6-35b-a3b"
+  }
+
+  rule {
+    target_label = "__address__"
+    replacement  = "host.docker.internal:8001"
+  }
+}
+
+loki.relabel "docker_metadata" {
+  forward_to = []
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/?(.*)"
+    target_label  = "container_name"
+    replacement   = "$1"
+  }
+
+  rule {
+    source_labels = ["container_name"]
+    regex         = "(.+)"
+    target_label  = "service_name"
+    replacement   = "$1"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_project"]
+    regex         = "(.+)"
+    target_label  = "compose_project"
+    replacement   = "$1"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_init_profile_name"]
+    regex         = "(.+)"
+    target_label  = "profile_name"
+    replacement   = "$1"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    regex         = "(.+)"
+    target_label  = "service_name"
+    replacement   = "$1"
+  }
+}
+
+loki.source.docker "containers" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.docker.containers.targets
+  forward_to = [loki.write.local.receiver]
+
+  labels = {
+    cluster_tenant = "spark_dgx_core",
+    environment    = "personal",
+    stack          = "observability-core",
+    host           = "barsana",
+    site           = "barsana",
+    role           = "spark-dgx",
+    job            = "machine-docker",
+    source_type    = "docker",
+    log_domain     = "container",
+    log_category   = "service-console",
+    vendor         = "docker",
+  }
+
+  relabel_rules = loki.relabel.docker_metadata.rules
+}
+
+loki.relabel "journal_metadata" {
+  forward_to = []
+
+  rule {
+    target_label = "job"
+    replacement  = "machine-journal"
+  }
+
+  rule {
+    target_label = "host"
+    replacement  = "barsana"
+  }
+
+  rule {
+    target_label = "site"
+    replacement  = "barsana"
+  }
+
+  rule {
+    target_label = "role"
+    replacement  = "spark-dgx"
+  }
+
+  rule {
+    target_label = "source_type"
+    replacement  = "journal"
+  }
+
+  rule {
+    target_label = "log_domain"
+    replacement  = "service"
+  }
+
+  rule {
+    target_label = "log_category"
+    replacement  = "system-service"
+  }
+
+  rule {
+    target_label = "vendor"
+    replacement  = "linux"
+  }
+
+  rule {
+    source_labels = ["__journal__hostname"]
+    target_label  = "journal_host"
+  }
+
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    target_label  = "unit"
+  }
+
+  rule {
+    source_labels = ["__journal_syslog_identifier"]
+    target_label  = "service_name"
+  }
+
+  rule {
+    source_labels = ["__journal__transport"]
+    target_label  = "transport"
+  }
+
+  rule {
+    source_labels = ["__journal_priority_keyword"]
+    target_label  = "priority"
+  }
+
+  rule {
+    source_labels = ["__journal__transport"]
+    regex         = "kernel"
+    target_label  = "log_domain"
+    replacement   = "kernel"
+  }
+
+  rule {
+    source_labels = ["__journal__transport"]
+    regex         = "kernel"
+    target_label  = "log_category"
+    replacement   = "kernel"
+  }
+
+  rule {
+    source_labels = ["__journal__systemd_unit", "__journal_syslog_identifier"]
+    separator     = ";"
+    regex         = "(?i).*(nvidia|nvml|nvrm|dcgm|cuda).*"
+    target_label  = "vendor"
+    replacement   = "nvidia"
+  }
+
+  rule {
+    source_labels = ["__journal__systemd_unit", "__journal_syslog_identifier"]
+    separator     = ";"
+    regex         = "(?i).*(nvidia|nvml|nvrm|dcgm|cuda).*"
+    target_label  = "log_category"
+    replacement   = "gpu-driver"
+  }
+
+  rule {
+    source_labels = ["__journal__systemd_unit", "__journal_syslog_identifier"]
+    separator     = ";"
+    regex         = "(?i).*(docker|containerd|podman|cri-o|nerdctl).*"
+    target_label  = "vendor"
+    replacement   = "container"
+  }
+
+  rule {
+    source_labels = ["__journal__systemd_unit", "__journal_syslog_identifier"]
+    separator     = ";"
+    regex         = "(?i).*(docker|containerd|podman|cri-o|nerdctl).*"
+    target_label  = "log_category"
+    replacement   = "container-runtime"
+  }
+}
+
+// The systemd journal is the primary Linux and NVIDIA log source on this host.
+loki.source.journal "system" {
+  path      = "/host/root/var/log/journal"
+  max_age   = "12h"
+  forward_to = [loki.write.local.receiver]
+
+  labels = {
+    cluster_tenant = "spark_dgx_core",
+    environment    = "personal",
+    stack          = "observability-core",
+  }
+
+  relabel_rules = loki.relabel.journal_metadata.rules
+}
+
+// File tails complement journald for Ubuntu installer and maintenance logs.
+loki.source.file "ubuntu_text_logs" {
+  targets = [
+    {
+      __path__       = "/host/root/var/log/cloud-init.log",
+      job            = "ubuntu-cloud-init",
+      service_name   = "cloud-init",
+      log_category   = "cloud-init",
+      source_type    = "file",
+      host           = "barsana",
+      site           = "barsana",
+      role           = "spark-dgx",
+      cluster_tenant = "spark_dgx_core",
+      environment    = "personal",
+      stack          = "observability-core",
+    },
+    {
+      __path__       = "/host/root/var/log/cloud-init-output.log",
+      job            = "ubuntu-cloud-init",
+      service_name   = "cloud-init",
+      log_category   = "cloud-init",
+      source_type    = "file",
+      host           = "barsana",
+      site           = "barsana",
+      role           = "spark-dgx",
+      cluster_tenant = "spark_dgx_core",
+      environment    = "personal",
+      stack          = "observability-core",
+    },
+    {
+      __path__       = "/host/root/var/log/dpkg.log",
+      job            = "ubuntu-dpkg",
+      service_name   = "dpkg",
+      log_category   = "package-management",
+      source_type    = "file",
+      host           = "barsana",
+      site           = "barsana",
+      role           = "spark-dgx",
+      cluster_tenant = "spark_dgx_core",
+      environment    = "personal",
+      stack          = "observability-core",
+    },
+    {
+      __path__       = "/host/root/var/log/apt/history.log",
+      job            = "ubuntu-apt",
+      service_name   = "apt",
+      log_category   = "package-management",
+      source_type    = "file",
+      host           = "barsana",
+      site           = "barsana",
+      role           = "spark-dgx",
+      cluster_tenant = "spark_dgx_core",
+      environment    = "personal",
+      stack          = "observability-core",
+    },
+    {
+      __path__       = "/host/root/var/log/apt/term.log",
+      job            = "ubuntu-apt",
+      service_name   = "apt",
+      log_category   = "package-management",
+      source_type    = "file",
+      host           = "barsana",
+      site           = "barsana",
+      role           = "spark-dgx",
+      cluster_tenant = "spark_dgx_core",
+      environment    = "personal",
+      stack          = "observability-core",
+    },
+    {
+      __path__       = "/host/root/var/log/installer/curtin-install.log",
+      job            = "ubuntu-installer",
+      service_name   = "curtin",
+      log_category   = "installer",
+      source_type    = "file",
+      host           = "barsana",
+      site           = "barsana",
+      role           = "spark-dgx",
+      cluster_tenant = "spark_dgx_core",
+      environment    = "personal",
+      stack          = "observability-core",
+    },
+    {
+      __path__       = "/host/root/var/log/installer/installer-journal.txt",
+      job            = "ubuntu-installer",
+      service_name   = "installer-journal",
+      log_category   = "installer",
+      source_type    = "file",
+      host           = "barsana",
+      site           = "barsana",
+      role           = "spark-dgx",
+      cluster_tenant = "spark_dgx_core",
+      environment    = "personal",
+      stack          = "observability-core",
+    },
+    {
+      __path__       = "/host/root/var/log/installer/subiquity-client-debug.log",
+      job            = "ubuntu-installer",
+      service_name   = "subiquity-client",
+      log_category   = "installer",
+      source_type    = "file",
+      host           = "barsana",
+      site           = "barsana",
+      role           = "spark-dgx",
+      cluster_tenant = "spark_dgx_core",
+      environment    = "personal",
+      stack          = "observability-core",
+    },
+    {
+      __path__       = "/host/root/var/log/installer/subiquity-client-info.log",
+      job            = "ubuntu-installer",
+      service_name   = "subiquity-client",
+      log_category   = "installer",
+      source_type    = "file",
+      host           = "barsana",
+      site           = "barsana",
+      role           = "spark-dgx",
+      cluster_tenant = "spark_dgx_core",
+      environment    = "personal",
+      stack          = "observability-core",
+    },
+    {
+      __path__       = "/host/root/var/log/installer/subiquity-server-debug.log",
+      job            = "ubuntu-installer",
+      service_name   = "subiquity-server",
+      log_category   = "installer",
+      source_type    = "file",
+      host           = "barsana",
+      site           = "barsana",
+      role           = "spark-dgx",
+      cluster_tenant = "spark_dgx_core",
+      environment    = "personal",
+      stack          = "observability-core",
+    },
+    {
+      __path__       = "/host/root/var/log/installer/subiquity-server-info.log",
+      job            = "ubuntu-installer",
+      service_name   = "subiquity-server",
+      log_category   = "installer",
+      source_type    = "file",
+      host           = "barsana",
+      site           = "barsana",
+      role           = "spark-dgx",
+      cluster_tenant = "spark_dgx_core",
+      environment    = "personal",
+      stack          = "observability-core",
+    },
+    {
+      __path__       = "/host/root/var/log/installer/oemlog/oem-iso-cfg.log",
+      job            = "ubuntu-installer",
+      service_name   = "oem-installer",
+      log_category   = "installer",
+      source_type    = "file",
+      host           = "barsana",
+      site           = "barsana",
+      role           = "spark-dgx",
+      cluster_tenant = "spark_dgx_core",
+      environment    = "personal",
+      stack          = "observability-core",
+    },
+  ]
+
+  forward_to = [loki.write.local.receiver]
+}
+
+loki.write "local" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}

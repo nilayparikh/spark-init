@@ -1,0 +1,87 @@
+*.pyc
+__pycache__/
+
+*.pyo
+*.pyd
+*.egg-info/
+.hypothesis/
+.nox/
+.tox/
+
+.env
+.env*
+!.env.example
+.artifacts
+.plans/
+
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+interfaces/llama-cpp/build/
+
+.DS_Store
+Thumbs.db
+
+*.log
+*.pid
+*.swp
+*.swo
+
+# Model weights (large binary files — users must download separately)
+/models/
+/qwen/models/
+/qwen/vllm_cache/
+/qwen/triton_cache/
+*.gguf
+*.safetensors
+*.bin
+.pt
+.ckpt
+
+# Docker build cache
+.docker/
+
+# IDE files (keep .vscode/settings.json and .vscode/extensions.json)
+.vscode/*.json
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.iml
+.project
+.classpath
+
+# Build outputs
+interfaces/llama-cpp/build/
+build/
+dist/
+*.egg-info/
+.pytype/
+
+# Storage volumes (runtime data — never commit)
+/data/storage/*
+!/data/storage/.gitkeep
+/observability/volumes/*
+!/observability/volumes/.gitkeep
+
+# Claude Code local settings (machine-specific — keep .claude/settings.json for team)
+.claude/settings.local.json
+.claude/backups
+.claude/file-history
+.claude/plans
+.claude/projects
+.claude/sessions
+.claude/tasks
+.claude/paste-cache
+.claude/file-history
+.claude/.last-cleanup
+.claude/history.jsonl
+.claude/shell-snapshots
+.claude/.claude.json
+
+# Miscellaneous
+.local
+.npm
+.bash_history

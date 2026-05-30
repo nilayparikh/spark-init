@@ -1,0 +1,52 @@
+site_name: ".init Stack"
+site_description: "Modular Docker Compose platform for local AI inference and observability on NVIDIA hardware"
+repo_url: https://github.com/nilayparikh/init-stack
+docs_dir: docs
+
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - search.highlight
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+
+nav:
+  - Home: index.md
+
+  - Getting Started:
+      - Quick Start: getting-started/quickstart.md
+      - Prerequisites: getting-started/prerequisites.md
+
+  - Architecture:
+      - Overview: architecture/overview.md
+      - Inference Stack: architecture/inference-stack.md
+      - Observability Stack: architecture/observability-stack.md
+      - Networking: architecture/networking.md
+
+  - Configuration:
+      - Docker Compose: configuration/docker-compose.md
+      - Environment Variables: configuration/environment-variables.md
+      - Custom Configs: configuration/custom-configs.md
+
+  - Guides:
+      - Adding Models: guides/adding-models.md
+      - Observability Setup: guides/observability-setup.md
+      - GPU Configuration: guides/gpu-configuration.md
+      - Troubleshooting: guides/troubleshooting.md
+
+  - API Reference:
+      - OpenAI Compatible: api/openai-compatible.md
+
+  - Reference:
+      - File Index: reference/file-index.md
+      - Docker Images: reference/docker-images.md
+
+  - Contributing:
+      - Development: contributing/development.md
+      - Docs Guide: contributing/docs-guide.md

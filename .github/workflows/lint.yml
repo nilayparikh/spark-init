@@ -1,0 +1,60 @@
+name: Lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  yaml-lint:
+    name: YAML Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Lint YAML files
+        run: |
+          yamllint -d "{extends: default, rules: {line-length: disable, truthy: disable}}" \
+            $(find . -name 'docker-compose*.yml' -o -name '*.yaml' -path '*/config/*')
+
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scan_path: "scripts/ data/config/postgres-init/"
+          ignore_paths: "node_modules"
+          severity: warning
+        env:
+          SHELLCHECK_OPTS: -e SC1091 -e SC2154 -e SC2317
+
+  python-lint:
+    name: Python Syntax
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check Python syntax
+        run: |
+          find scripts/ -name '*.py' -print0 | xargs -0 -I{} python3 -m py_compile {}

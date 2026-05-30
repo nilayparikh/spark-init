@@ -1,0 +1,38 @@
+.init — Modular Docker Compose platform for local AI inference and observability on NVIDIA DGX/Spark hardware.
+
+Copyright 2025 .init contributors
+
+This product includes or is dependent on the following third-party software:
+
+================================================================================
+llama.cpp — MIT License
+https://github.com/ggml-org/llama.cpp
+Copyright (c) 2023-2025 The ggml-org Contributors
+================================================================================
+
+LiteLLM — MIT License
+https://github.com/BerriAI/litellm
+Copyright (c) 2023-2025 BerriAI
+================================================================================
+
+Grafana Alloy, Mimir, Loki — AGPL/LGPL
+https://grafana.com
+Copyright (c) 2024-2025 Grafana Labs
+================================================================================
+
+NVIDIA CUDA Toolkit — Proprietary (CUDA EULA)
+Runtime dependency only; not redistributed as source.
+https://developer.nvidia.com/cuda-toolkit
+================================================================================
+
+PostgreSQL — PostgreSQL License (BSD-like)
+https://www.postgresql.org/about/licence/
+Copyright (c) 2024-2025 The PostgreSQL Global Development Group
+================================================================================
+
+Qwen model weights — separate model license
+Model weights are NOT included in this repository.
+Users must download model weights separately and comply with the applicable
+model license (e.g., Qwen Apache 2.0 or other license as specified by the
+model provider at https://huggingface.co/Qwen).
+================================================================================

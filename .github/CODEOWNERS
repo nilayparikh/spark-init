@@ -1,0 +1,17 @@
+# Code Owners for .init project
+
+# Documentation - @nilayparikh (or leave as generic since it's a personal repo going open source)
+
+docs/ @nilayparikh
+
+# Interfaces layer - LiteLLM, llama.cpp, vLLM configurations
+
+interfaces/ @nilayparikh
+
+# Observability stack - Grafana, Mimir, Loki, Alloy
+
+observability/ @nilayparikh
+
+# Data layer - Postgres and related services
+
+data/ @nilayparikh

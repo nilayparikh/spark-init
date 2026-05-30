@@ -1,0 +1,622 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        }
+      }
+    ]
+  },
+  "editable": false,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "dashboard",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [],
+      "targetBlank": false,
+      "title": "Docker Containers",
+      "type": "link",
+      "url": "/d/spark-docker-containers/spark-docker-containers"
+    },
+    {
+      "asDropdown": false,
+      "icon": "logs",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [],
+      "targetBlank": false,
+      "title": "Machine Logs",
+      "type": "link",
+      "url": "/d/spark-machine-logs/spark-machine-logs"
+    }
+  ],
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "mimir"
+          },
+          "expr": "count(max by (compose_project) (container_last_seen{job=\"machine-docker\",host=\"$host\",image!=\"\",compose_project=~\"$project\",profile_name=~\"$profile\",service_name=~\"$service\",container_name=~\"$container\"}))",
+          "refId": "A"
+        }
+      ],
+      "title": "Projects",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "mimir"
+          },
+          "expr": "count(max by (profile_name) (container_last_seen{job=\"machine-docker\",host=\"$host\",image!=\"\",compose_project=~\"$project\",profile_name=~\"$profile\",service_name=~\"$service\",container_name=~\"$container\"}))",
+          "refId": "A"
+        }
+      ],
+      "title": "Profiles",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "mimir"
+          },
+          "expr": "count(max by (service_name) (container_last_seen{job=\"machine-docker\",host=\"$host\",image!=\"\",compose_project=~\"$project\",profile_name=~\"$profile\",service_name=~\"$service\",container_name=~\"$container\"}))",
+          "refId": "A"
+        }
+      ],
+      "title": "Services",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "mimir"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "mimir"
+          },
+          "expr": "count(max by (container_name) (container_last_seen{job=\"machine-docker\",host=\"$host\",image!=\"\",compose_project=~\"$project\",profile_name=~\"$profile\",service_name=~\"$service\",container_name=~\"$container\"}))",
+          "refId": "A"
+        }
+      ],
+      "title": "Containers",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 4
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "expr": "sum by (service_name) (count_over_time({job=\"machine-docker\",host=\"$host\",compose_project=~\"$project\",profile_name=~\"$profile\",service_name=~\"$service\",container_name=~\"$container\"}[$__auto]))",
+          "legendFormat": "{{service_name}}",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Log Volume By Service",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "expr": "sum by (service_name) (count_over_time({job=\"machine-docker\",host=\"$host\",compose_project=~\"$project\",profile_name=~\"$profile\",service_name=~\"$service\",container_name=~\"$container\"} |~ \"(?i)(error|warn|exception|fatal|panic|timeout|oom|traceback|killed|restart)\" [$__auto]))",
+          "legendFormat": "{{service_name}}",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Error And Restart Signals",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 16,
+        "x": 0,
+        "y": 12
+      },
+      "id": 7,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": true,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "expr": "{job=\"machine-docker\",host=\"$host\",compose_project=~\"$project\",profile_name=~\"$profile\",service_name=~\"$service\",container_name=~\"$container\"}",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "All Container Logs",
+      "type": "logs"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 8,
+        "x": 16,
+        "y": 12
+      },
+      "id": 8,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": true,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "expr": "{job=\"machine-docker\",host=\"$host\",compose_project=~\"$project\",profile_name=~\"$profile\",service_name=~\"$service\",container_name=~\"$container\"} |~ \"(?i)(error|warn|exception|fatal|panic|timeout|oom|traceback|killed|restart)\"",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Filtered Error Logs",
+      "type": "logs"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 41,
+  "tags": [
+    "machine",
+    "spark",
+    "dgx",
+    "logs",
+    "docker",
+    "containers"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "barsana",
+          "value": "barsana"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "mimir"
+        },
+        "definition": "label_values(up{job=\"machine-linux\"}, host)",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Host",
+        "multi": false,
+        "name": "host",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(up{job=\"machine-linux\"}, host)",
+          "refId": "PrometheusVariableQueryEditor-Host"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "mimir"
+        },
+        "definition": "label_values(container_last_seen{job=\"machine-docker\",host=\"$host\",image!=\"\",compose_project!=\"\"}, compose_project)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Project",
+        "multi": false,
+        "name": "project",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(container_last_seen{job=\"machine-docker\",host=\"$host\",image!=\"\",compose_project!=\"\"}, compose_project)",
+          "refId": "PrometheusVariableQueryEditor-Project"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "mimir"
+        },
+        "definition": "label_values(container_last_seen{job=\"machine-docker\",host=\"$host\",image!=\"\",compose_project=~\"$project\",profile_name!=\"\"}, profile_name)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Profile",
+        "multi": true,
+        "name": "profile",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(container_last_seen{job=\"machine-docker\",host=\"$host\",image!=\"\",compose_project=~\"$project\",profile_name!=\"\"}, profile_name)",
+          "refId": "PrometheusVariableQueryEditor-Profile"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "mimir"
+        },
+        "definition": "label_values(container_last_seen{job=\"machine-docker\",host=\"$host\",image!=\"\",compose_project=~\"$project\",profile_name=~\"$profile\",service_name!=\"\"}, service_name)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Service",
+        "multi": true,
+        "name": "service",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(container_last_seen{job=\"machine-docker\",host=\"$host\",image!=\"\",compose_project=~\"$project\",profile_name=~\"$profile\",service_name!=\"\"}, service_name)",
+          "refId": "PrometheusVariableQueryEditor-Service"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "mimir"
+        },
+        "definition": "label_values(container_last_seen{job=\"machine-docker\",host=\"$host\",image!=\"\",compose_project=~\"$project\",profile_name=~\"$profile\",service_name=~\"$service\",container_name!=\"\"}, container_name)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Container",
+        "multi": true,
+        "name": "container",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(container_last_seen{job=\"machine-docker\",host=\"$host\",image!=\"\",compose_project=~\"$project\",profile_name=~\"$profile\",service_name=~\"$service\",container_name!=\"\"}, container_name)",
+          "refId": "PrometheusVariableQueryEditor-Container"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Spark Container Logs",
+  "uid": "spark-container-logs",
+  "version": 1,
+  "weekStart": ""
+}

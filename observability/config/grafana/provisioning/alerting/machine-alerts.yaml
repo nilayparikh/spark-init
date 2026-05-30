@@ -1,0 +1,287 @@
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: spark_machine_health
+    folder: Observability
+    interval: 30s
+    rules:
+      - uid: spark_gpu_therm_high
+        title: Spark GPU Thermal High
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: mimir
+            model:
+              datasource:
+                type: prometheus
+                uid: mimir
+              editorMode: code
+              expr: max(DCGM_FI_DEV_GPU_TEMP{job="machine-gpu",host="barsana"})
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: B
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: []
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - B
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              reducer: last
+              refId: B
+              type: reduce
+          - refId: C
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 82
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: B
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        dashboardUid: spark-machine-overview
+        panelId: 13
+        noDataState: NoData
+        execErrState: Error
+        for: 2m
+        annotations:
+          __dashboardUid__: spark-machine-overview
+          __panelId__: "13"
+          summary: GPU thermals on barsana exceeded 82C.
+          description: Check the GPU thermals and power panels for the hottest device.
+        labels:
+          alertname: spark_gpu_thermal_high
+          category: gpu
+          host: barsana
+          severity: warning
+        isPaused: false
+      - uid: spark_filesystem_pressure
+        title: Spark Filesystem Pressure
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: mimir
+            model:
+              datasource:
+                type: prometheus
+                uid: mimir
+              editorMode: code
+              expr: max(100 * (1 - (node_filesystem_avail_bytes{job="machine-linux",host="barsana",fstype!~"tmpfs|overlay|squashfs|nsfs",mountpoint!~"/snap.*"} / node_filesystem_size_bytes{job="machine-linux",host="barsana",fstype!~"tmpfs|overlay|squashfs|nsfs",mountpoint!~"/snap.*"})))
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: B
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: []
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - B
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              reducer: last
+              refId: B
+              type: reduce
+          - refId: C
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 85
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: B
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        dashboardUid: spark-machine-overview
+        panelId: 10
+        noDataState: NoData
+        execErrState: Error
+        for: 10m
+        annotations:
+          __dashboardUid__: spark-machine-overview
+          __panelId__: "10"
+          summary: One or more filesystems on barsana exceeded 85% used.
+          description: Check filesystem used and free-space panels before the host runs out of capacity.
+        labels:
+          alertname: spark_filesystem_pressure
+          category: storage
+          host: barsana
+          severity: warning
+        isPaused: false
+      - uid: spark_host_saturated
+        title: Spark Host Saturated
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: mimir
+            model:
+              datasource:
+                type: prometheus
+                uid: mimir
+              editorMode: code
+              expr: 100 - (avg(rate(node_cpu_seconds_total{mode="idle",job="machine-linux",host="barsana"}[5m])) * 100)
+              instant: true
+              intervalMs: 1000
+              legendFormat: __auto
+              maxDataPoints: 43200
+              range: false
+              refId: A
+          - refId: B
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: []
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - B
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              reducer: last
+              refId: B
+              type: reduce
+          - refId: C
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 90
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: B
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        dashboardUid: spark-machine-overview
+        panelId: 7
+        noDataState: NoData
+        execErrState: Error
+        for: 5m
+        annotations:
+          __dashboardUid__: spark-machine-overview
+          __panelId__: "7"
+          summary: CPU busy on barsana stayed above 90% for five minutes.
+          description: Check CPU load, memory pressure, and top resource panels for sustained host saturation.
+        labels:
+          alertname: spark_host_saturated
+          category: compute
+          host: barsana
+          severity: warning
+        isPaused: false

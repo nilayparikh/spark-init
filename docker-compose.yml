@@ -1,0 +1,10 @@
+include:
+  - ./data/docker-compose.data.yml
+  - ./observability/docker-compose.obs.yml
+  - ./interfaces/docker-compose.interface.yml
+  - ./network/docker-compose.yaml
+
+networks:
+  default:
+    external: true
+    name: init_default

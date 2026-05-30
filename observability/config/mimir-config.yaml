@@ -1,0 +1,59 @@
+target: all,alertmanager
+
+multitenancy_enabled: false
+no_auth_tenant: tenant-shared
+
+api:
+  prometheus_http_prefix: /
+
+server:
+  http_listen_port: 9009
+  log_level: warn
+
+common:
+  storage:
+    backend: filesystem
+    filesystem:
+      dir: /var/lib/mimir/object-store
+
+blocks_storage:
+  tsdb:
+    dir: /var/lib/mimir/tsdb
+
+ingester:
+  ring:
+    replication_factor: 1
+
+store_gateway:
+  sharding_ring:
+    replication_factor: 1
+
+compactor:
+  data_dir: /var/lib/mimir/compactor
+
+ruler:
+  rule_path: /tmp/mimir/ruler
+  alertmanager_url: http://127.0.0.1:9009/alertmanager
+
+ruler_storage:
+  backend: filesystem
+  filesystem:
+    dir: /var/lib/mimir/ruler-storage
+
+alertmanager:
+  data_dir: /tmp/mimir/alertmanager
+  fallback_config_file: /etc/mimir/alertmanager-fallback.yaml
+  external_url: http://localhost:9009/alertmanager
+  sharding_ring:
+    replication_factor: 1
+
+alertmanager_storage:
+  backend: filesystem
+  filesystem:
+    dir: /var/lib/mimir/alertmanager-storage
+
+limits:
+  compactor_blocks_retention_period: ${MIMIR_RETENTION_PERIOD:7d}
+
+usage_stats:
+  enabled: false

@@ -1,0 +1,35 @@
+services:
+  postgres:
+    image: ${DATA_POSTGRES_IMAGE}
+    container_name: ${DATA_POSTGRES_CONTAINER_NAME}
+    restart: "no"
+    profiles:
+      - data
+      - all
+      - active
+    labels:
+      "init.profile_name": "data"
+    environment:
+      POSTGRES_DB: ${DATA_POSTGRES_DB}
+      POSTGRES_USER: ${DATA_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${DATA_POSTGRES_PASSWORD}
+      PGDATA: ${DATA_POSTGRES_PGDATA}
+      GRAFANA_DB_NAME: ${GRAFANA_DB_NAME}
+      GRAFANA_DB_USER: ${GRAFANA_DB_USER}
+      GRAFANA_DB_PASSWORD: ${GRAFANA_DB_PASSWORD}
+      INTERFACE_DB_NAME: ${INTERFACE_DB_NAME}
+      INTERFACE_DB_USER: ${INTERFACE_DB_USER}
+      INTERFACE_DB_PASSWORD: ${INTERFACE_DB_PASSWORD}
+    ports:
+      - "${DATA_POSTGRES_BIND_HOST}:${DATA_POSTGRES_PORT}:5432"
+    volumes:
+      - ./storage/postgres:/var/lib/postgresql/data
+      - ./config/postgres-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U ${DATA_POSTGRES_USER} -d ${DATA_POSTGRES_DB}
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 10s

@@ -1,0 +1,20 @@
+{
+  "autoConnectIde": false,
+  "autoInstallIdeExtension": false,
+  "hasCompletedOnboarding": true,
+  "theme": "dark",
+  "telemetry": "off",
+  "projects": {
+    "/workspace": {
+      "hasTrustDialogAccepted": true,
+      "allowedTools": [
+        "Bash",
+        "Read",
+        "Write",
+        "Edit",
+        "Glob",
+        "LS"
+      ]
+    }
+  }
+}
