@@ -29,16 +29,14 @@ docker network create init_default
 
 Services discover each other via Docker's embedded DNS. Container names serve as hostnames within the `init_default` network.
 
-| Service    | Internal Hostname | Port (internal)                | Accessed By      |
-| ---------- | ----------------- | ------------------------------ | ---------------- |
-| `postgres` | `postgres`        | 5432                           | Grafana, LiteLLM |
-| `mimir`    | `mimir`           | 9009 (Prometheus), 8080 (HTTP) |
-
-| Alloy, Grafana
-| `loki` | `loki` | 3100 (HTTP)
-| Alloy, Grafana
-| `alloy` | `alloy` | 12345 (scrape)
-| Internal only — no external access needed.
+| Service         | Internal Hostname | Port (internal)              | Accessed By              |
+|-----------------|-------------------|------------------------------|--------------------------|
+| `postgres`      | `postgres`        | 5432                         | Grafana, LiteLLM         |
+| `mimir`         | `mimir`           | 9009 (Prometheus), 8080 (HTTP) | Alloy, Grafana        |
+| `loki`          | `loki`            | 3100 (HTTP)                  | Alloy, Grafana           |
+| `alloy`         | `alloy`           | 12345 (scrape)               | Internal only            |
+| `gpu-telemetry` | `gpu-telemetry`   | 9400 (metrics)               | Alloy                    |
+| `cadvisor`      | `cadvisor`        | 8080 (metrics)               | Alloy                    |
 
 ## host.docker.internal
 

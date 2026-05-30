@@ -6,12 +6,12 @@ The observability layer collects, stores, and visualizes telemetry from the enti
 
 | Service         | Purpose                                                 | Profile |
 | --------------- | ------------------------------------------------------- | ------- |
-| `alloy`         | Host metrics and log collector (Grafana Alloy)          |
-| `mimir`         | Local metrics backend, single-binary, filesystem-backed |
-| `loki`          | Local log backend, single-binary, filesystem-backed     |
-| `cadvisor`      | Docker container telemetry collector                    |
-| `gpu-telemetry` | NVIDIA DCGM exporter for GPU telemetry                  |
-| `grafana`       | UI and dashboard layer                                  |
+| `alloy`         | Host metrics and log collector (Grafana Alloy)          | `obs`   |
+| `mimir`         | Local metrics backend, single-binary, filesystem-backed | `obs`   |
+| `loki`          | Local log backend, single-binary, filesystem-backed     | `obs`   |
+| `cadvisor`      | Docker container telemetry collector                    | `obs`   |
+| `gpu-telemetry` | NVIDIA DCGM exporter for GPU telemetry                  | `obs`   |
+| `grafana`       | UI and dashboard layer                                  | `obs`   |
 
 ## Collection Strategy
 
@@ -78,14 +78,15 @@ graph LR
 ```
 
 - **Postgres** must start before Grafana (`depends_on` with `condition: service_healthy`)
-- **Mimir and Loki** must start before Alloy (`depends_on` with `condition: service_healthy`)
+- **Mimir, Loki, DCGM exporter, and cAdvisor** must start before Alloy (`depends_on` with `condition: service_started`)
 - **Alloy** never attempts to stream scraped data to uninitialized endpoints
 
 ## Storage
 
 All observability data persists locally:
 
-- Mimir blocks: `observability/volumes/mimir/`
-- Loki chunks and WAL: `observability/volumes/loki/`
-- Alloy state: `observability/volumes/alloy/`
+- Mimir blocks: `data/storage/mimir/` (mounted as `/var/lib/mimir`)
+- Loki chunks and WAL: `data/storage/loki/` (mounted as `/var/lib/loki`)
+- Alloy state: `observability/volumes/alloy/` (mounted as `/var/lib/alloy`)
+- Grafana data: `observability/volumes/grafana/` (mounted as `/var/lib/grafana`)
 - Grafana dashboards and provisioning configs are versioned in `observability/config/grafana/provisioning/`

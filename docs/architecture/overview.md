@@ -13,6 +13,7 @@ graph TB
     subgraph "Interfaces Layer"
         B["LiteLLM Proxy<br/>(:4000)"]
         C["llama.cpp<br/>Standard (Qwen 3.6 27B)<br/>(:8000)"]
+        D["llama.cpp<br/>35B A3B<br/>(:8001)"]
     end
 
     subgraph "Observability Layer"
@@ -64,10 +65,11 @@ Collects, stores, and visualizes telemetry from the entire stack.
 
 The AI inference surface. Provides OpenAI-compatible API endpoints powered by llama.cpp.
 
-| Service              | Purpose                                             | Port |
-| -------------------- | --------------------------------------------------- | ---- |
-| `litellm`            | OpenAI-compatible proxy with multi-provider routing | 4000 |
-| `llama-qwen-3-6-27b` | Standard (Qwen 3.6 27B) backend via llama.cpp       | 8000 |
+| Service                      | Purpose                                                         | Port   |
+|------------------------------|-----------------------------------------------------------------|--------|
+| `litellm`                    | OpenAI-compatible proxy with multi-provider routing             | 4000   |
+| `llama-qwen-3-6-27b`         | Standard (Qwen 3.6 27B) backend via llama.cpp                   | 8000   |
+| `llama-qwen-3-6-35b-a3b`     | 35B A3B backend via llama.cpp (multimodal, NVFP4 quantization)  | 8001   |
 
 ## Profile Selection Logic
 
@@ -81,11 +83,12 @@ Each service declares which profiles it belongs to. Docker Compose starts only s
 
 ### Profile Dependency Rules
 
-| Rule                                               | Enforcement                                  |
-| -------------------------------------------------- | -------------------------------------------- |
-| `interface` requires `data` (Postgres for LiteLLM) | Manual — operator must include both profiles |
-| `obs` requires `data` (Postgres for Grafana)       | Manual — operator must include both profiles |
-| `llama-qwen-3-6-27b` is independent of `obs`       | Can run with or without observability        |
+| Rule                                                          | Enforcement                                         |
+|---------------------------------------------------------------|-----------------------------------------------------|
+| `interface` requires `data` (Postgres for LiteLLM)            | Manual — operator must include both profiles        |
+| `obs` requires `data` (Postgres for Grafana)                  | Manual — operator must include both profiles        |
+| `llama-qwen-3-6-27b` is independent of `obs`                  | Can run with or without observability               |
+| `llama-qwen-3-6-35b-a3b` is independent of `obs`              | Can run with or without observability               |
 
 ## Service Dependency Graph
 
@@ -103,7 +106,7 @@ graph LR
 
 - **Postgres** must start before Grafana and LiteLLM (enforced via `depends_on` with `condition: service_healthy`).
 - **GPU backends** are independent of Postgres — they only need the NVIDIA runtime and model files.
-- **Alloy** must start after Mimir and Loki are healthy (enforced via `depends_on` with `condition: service_healthy`).
+- **Alloy** must start after Mimir, Loki, DCGM exporter, and cAdvisor are started (enforced via `depends_on` with `condition: service_started`).
 
 ## Data Flow
 

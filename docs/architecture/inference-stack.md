@@ -17,6 +17,7 @@ graph LR
 
     subgraph "Local Backends"
         D["llama.cpp<br/>Standard (Qwen 3.6 27B)<br/>(:8000)"]
+        E["llama.cpp<br/>35B A3B (multimodal)<br/>(:8001)"]
     end
 
     subgraph "Cloud Providers"
@@ -28,20 +29,21 @@ graph LR
     A --> B
     B --> C
     C --> D
+    C --> E
     C --> G
     C --> H
 ```
 
 ## Supported Models
 
-The `.init` stack supports two model variants:
+The `.init` stack supports two local model backends:
 
-| Model                       | Description                                | Format        | Profile                |
-| --------------------------- | ------------------------------------------ | ------------- | ---------------------- |
-| **Standard** (Qwen 3.6 27B) | Full 27B parameter model with MTP          | GGUF (Q4_K_M) | `llama-qwen-3-6-27b`   |
-| **Lite**                    | Optimized variant for lower resource usage | GGUF (Q4_K_M) | `llama-lite` (planned) |
+| Model | Description | Format | Profile |
+|-------|-------------|--------|---------|
+| **Standard** (Qwen 3.6 27B) | Full 27B parameter model with MTP | GGUF (NVFP4) | `llama-qwen-3-6-27b` |
+| **35B A3B** (Qwen 3.6 35B A3B) | Multimodal 35B A3B model with MTP and mmproj | GGUF (NVFP4) | `llama-qwen-3-6-35b-a3b` |
 
-> **Note:** vLLM is NOT supported on DGX Spark hardware due to SM120/SM121 limitations (missing TMEM, unoptimized kernels, MTP shape mismatch). Only llama.cpp provides stable inference.
+> **Note:** Only llama.cpp is supported as the inference backend on DGX Spark hardware due to SM120/SM121 limitations (missing TMEM, unoptimized kernels, MTP shape mismatch).
 
 ## llama.cpp Backend
 
@@ -55,31 +57,44 @@ The Dockerfile builds llama.cpp with these key settings:
 - **Architecture 12.1** — Optimized for compute capability
 - **Speculative decoding with MTP** — Multi-Token Prediction for faster inference
 
-### Runtime Configuration
+### Runtime Configuration (27B)
 
-The backend runs with these optimized parameters:
+The 27B backend runs with these optimized parameters:
 
 ```
---temp 0.15
---top-p 0.92
---top-k 10
---presence-penalty 0.0
---frequency-penalty 1.03
 --min-p 0.05
--c 262144          # Context window: 262K tokens
--b 2048           # Batch size
---parallel 2     # Parallel requests
+-c 131072          # Context window: 128K tokens
+-b 2048            # Batch size
+--parallel 1      # Parallel requests
 --cont-batching
+--cache-prompt
+--swa-full
+-t 8              # Threads
+-tb 8             # Threads per batch
+--mlock
+--port 8080
+--host 0.0.0.0
+--metrics
+--timeout 120
+```
+
+### Runtime Configuration (35B A3B)
+
+The 35B A3B backend uses the same parameters as the 27B, with these differences:
+
+```
+-c 262144         # Context window: 256K tokens
+-mm /models/mmproj.gguf  # Multimodal projector for vision
 ```
 
 ### Speculative Decoding
 
-The backend uses speculative decoding with MTP (Multi-Token Prediction):
+Both backends use speculative decoding with MTP (Multi-Token Prediction):
 
 ```
 --spec-type draft-mtp,ngram-mod
---spec-draft-n-max 3
---spec-draft-p-min 0.90
+--spec-draft-n-max 2
+--spec-draft-p-min 0.88
 --spec-draft-ngl 99
 ```
 
@@ -89,16 +104,17 @@ This allows the model to predict multiple tokens per forward pass, significantly
 
 ### Standard Model (Qwen 3.6 27B)
 
-- **Format**: GGUF with Q4_K_M quantization
-- **Context window**: 262K tokens
+- **Format**: GGUF with NVFP4 quantization
+- **Context window**: 128K tokens
 - **MTP**: Multi-Token Prediction enabled for faster inference
-- **VRAM requirement**: ~30GB for Q4_K_M quantization
+- **VRAM requirement**: Scales with NVFP4 quantization profile
 
-### Lite Model
+### 35B A3B Model (Qwen 3.6 35B A3B)
 
-- **Format**: GGUF with Q4_K_M quantization
-- **Optimized for**: Lower VRAM and CPU resource usage
-- **Use case**: Development and testing environments
+- **Format**: GGUF with NVFP4 quantization
+- **Context window**: 256K tokens
+- **Multimodal**: Supports vision via separate mmproj BF16 GGUF file
+- **MTP**: Multi-Token Prediction enabled for faster inference
 
 ## LiteLLM Proxy
 
@@ -118,8 +134,8 @@ Local backends → INTERFACE_
 - `openai/<provider>/...` — Standard OpenAI-compatible naming
 - `anthropic/<provider>/...` — Claude compatibility aliases:
   - `claude-opus-4.7`
-  - `claude-sonnet-3.5
-  - `claude-haiku-3.5
+  - `claude-sonnet-3.5`
+  - `claude-haiku-3.5`
 
 ### Authentication
 
@@ -129,24 +145,21 @@ Authorization: Bearer $LITELLM_MASTER_KEY
 
 ## Profile Mutual Exclusivity
 
-`llama-qwen-3-6-27b` and `vllm-qwen-3-6-27b` are **mutually exclusive** — both use host port 8000. The operator must choose one backend per stack instance.
+`llama-qwen-3-6-27b` and `llama-qwen-3-6-35b-a3b` use separate host ports (8000 and 8001 respectively) and can run simultaneously. Both require the `interface` profile for the LiteLLM proxy.
 
 ```
 # Valid combinations
 COMPOSE_PROFILES=data,obs,interface,llama-qwen-3-6-27b
-COMPOSE_PROFILES=data,interface,vllm-qwen-3-6-27b
-COMPOSE_PROFILES=data,vllm-qwen-3-6-35b-a3b
-
-# Invalid — port 8000 conflict
-COMPOSE_PROFILES=data,interface,llama-qwen-3-6-27b,vllm-qwen-3-6-27b
+COMPOSE_PROFILES=data,obs,interface,llama-qwen-3-6-35b-a3b
+COMPOSE_PROFILES=data,obs,interface,llama-qwen-3-6-27b,llama-qwen-3-6-35b-a3b
 ```
 
 ## Chat Template Configuration
 
-Qwen 3.6 models use a custom Jinja chat template mounted into the container:
+Qwen 3.6 models use a custom Jinja chat template mounted into the llama.cpp container:
 
 ```
 ./config/qwen3.6/chat_template.jinja:/workspace/chat_template.jinja:ro
 ```
 
-The template is loaded with `--jinja --chat-template-file /workspace/chat_template.jinja` and enables proper reasoning format support (`--reasoning on --reasoning-format deepseek`).35B_A
+The template is loaded with `--jinja --chat-template-file /workspace/chat_template.jinja` and enables proper reasoning format support (`--reasoning on --reasoning-format deepseek`).
