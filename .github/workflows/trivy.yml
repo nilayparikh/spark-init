@@ -18,15 +18,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Initialize submodules
-        run: git submodule update --init --recursive
-
       - name: Run Trivy
-        uses: aquasecurity/trivy-action@0.28.2
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
           scan-ref: "."
-          trivy-config: trivy.yaml
+          args: >-
+            --config trivy.yaml
           format: table
           exit-code: 1
           ignore-unfixed: true
