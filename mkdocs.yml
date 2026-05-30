@@ -37,7 +37,7 @@ theme:
 
 plugins:
   - search
-  - mermaid2-plugin
+  - mermaid2
 
 nav:
   - Home: index.md
