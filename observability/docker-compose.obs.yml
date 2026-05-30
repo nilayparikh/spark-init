@@ -1,3 +1,4 @@
+---
 services:
   mimir:
     image: grafana/mimir:latest

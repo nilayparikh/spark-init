@@ -19,7 +19,9 @@ ENV_FILE="${WORKSPACE_DIR}/.env"
 
 if [ -f "$ENV_FILE" ]; then
     echo "📄 [ENV] Found .env file in workspace root. Parsing keys..."
-    export $(grep -v '^#' "$ENV_FILE" | xargs)
+    set -a
+    source <(grep -v '^#' "$ENV_FILE")
+    set +a
 else
     echo "⚠️ [ENV] No .env file found at ${ENV_FILE}. Falling back to default values."
 fi

@@ -37,7 +37,7 @@ jobs:
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@master
         with:
-          scan_path: "scripts/ data/config/postgres-init/"
+          scandir: "scripts/ data/config/postgres-init/"
           ignore_paths: "node_modules"
           severity: warning
         env:
