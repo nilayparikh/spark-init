@@ -9,7 +9,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     git \
     ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+    shellcheck \
+    fd-find \
+    tree \
+    ripgrep \
+    jq \
+    yq \
+    zoxide \
+    sd \
+    unzip \
+    && rm -rf /var/lib/apt/lists/* \
+    && ln -s $(which fdfind) /usr/local/bin/fd
 
 # 3. Securely fetch and run the official NodeSource script for Node.js LTS (v20)
 # This handles the proper deb.nodesource.com routing and ARM64 setup automatically.
@@ -17,10 +27,42 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-# 4. Install Claude Code globally using npm
+# 4. Install GitHub CLI using the official Debian repository
+RUN mkdir -p /usr/share/keyrings \
+    && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+    | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+    > /etc/apt/sources.list.d/github-cli.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends gh \
+    && rm -rf /var/lib/apt/lists/*
+
+# 5. Install additional Claude Code productivity utilities
+RUN set -eux; \
+    curl -fsSL -o /tmp/ast-grep.zip \
+      https://github.com/ast-grep/ast-grep/releases/latest/download/app-aarch64-unknown-linux-gnu.zip; \
+    unzip /tmp/ast-grep.zip -d /tmp/ast-grep; \
+    install -Dm755 /tmp/ast-grep/ast-grep /usr/local/bin/ast-grep; \
+    curl -fsSL -o /tmp/difft.tar.gz \
+      https://github.com/Wilfred/difftastic/releases/latest/download/difft-aarch64-unknown-linux-gnu.tar.gz; \
+    tar -xzf /tmp/difft.tar.gz -C /tmp; \
+    install -Dm755 /tmp/difft /usr/local/bin/difft; \
+    ln -fs /usr/local/bin/difft /usr/local/bin/difftastic; \
+    curl -fsSL -o /tmp/scc.tar.gz \
+      https://github.com/boyter/scc/releases/latest/download/scc_Linux_arm64.tar.gz; \
+    tar -xzf /tmp/scc.tar.gz -C /tmp; \
+    install -Dm755 /tmp/scc /usr/local/bin/scc; \
+    curl -fsSL -o /tmp/watchexec.deb \
+      https://github.com/watchexec/watchexec/releases/latest/download/watchexec-2.5.1-aarch64-unknown-linux-gnu.deb; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends /tmp/watchexec.deb; \
+    rm -rf /tmp/* /var/lib/apt/lists/*
+
+# 6. Install Claude Code globally using npm
 RUN npm install -g @anthropic-ai/claude-code
 
-# 5. Create a non-root devcontainer user for the mounted workspace
+# 7. Create a non-root devcontainer user for the mounted workspace
 ARG USERNAME=vscode
 ARG USER_UID=1000
 ARG USER_GID=1000
@@ -40,7 +82,7 @@ RUN set -eux; \
     chown "${USER_UID}:${USER_GID}" /workspace; \
     rm -rf /var/lib/apt/lists/*
 
-# 6. Inject optimization environment variables for Custom Models & Docker isolation
+# 8. Inject optimization environment variables for Custom Models & Docker isolation
 ENV CLAUDE_CODE_ATTRIBUTION_HEADER="0" \
     IS_SANDBOX="1" \
     CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL="1" \
