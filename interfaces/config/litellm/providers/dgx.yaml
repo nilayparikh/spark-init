@@ -1,8 +1,9 @@
+---
 model_list:
   # Base Profile: Centralised Configuration Block
   - model_name: DGX/Qwen3.6-27B/SWE
     litellm_params:
-      &dgx_qwen_params # Force LiteLLM to translate Claude Code's Anthropic payload into OpenAI structure
+      &dgx_qwen_params  # Force LiteLLM to translate Claude Code's Anthropic payload into OpenAI structure
       model: openai/os.environ/QWEN3_6_27B_SERVING_MODEL
       api_base: os.environ/QWEN3_6_27B_BASE_URL
       api_key: os.environ/QWEN3_6_27B_API_KEY

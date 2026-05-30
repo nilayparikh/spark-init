@@ -1,3 +1,4 @@
+---
 services:
   litellm:
     image: ${LITELLM_IMAGE:-docker.litellm.ai/berriai/litellm:latest}

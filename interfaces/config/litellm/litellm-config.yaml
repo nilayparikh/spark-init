@@ -1,3 +1,4 @@
+---
 # Root LiteLLM config. Provider catalogs live under providers/.
 # YAML anchors stay local to each file because aliases do not span files.
 include:

@@ -1,3 +1,4 @@
+---
 model_list:
   - model_name: Azure/Kimi-K2.6
     litellm_params:
