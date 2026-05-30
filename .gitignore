@@ -88,3 +88,4 @@ dist/
 .local
 .npm
 .bash_history
+.trivy

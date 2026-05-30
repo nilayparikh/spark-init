@@ -3,12 +3,10 @@
 # trivy-scan.sh — Post-tool-use hook
 #
 # Scans every written/modified file for secrets and misconfigurations using
-# Trivy. Replaces the old protect-env.sh + scan-secrets.sh + run-linter.sh
-# multi-hook system with a single unified scan.
+# Trivy. Uses trivy.yaml as config and trivy-secret.yaml for custom rules.
 #
 # Scanners:  secret, misconfig
 # Severity:  CRITICAL, HIGH, MEDIUM
-# Config:    trivy-secret.yaml (custom rule definitions)
 # =============================================================================
 set -euo pipefail
 
@@ -23,13 +21,6 @@ FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
 # Resolve to absolute path
 FILE_PATH=$(cd "$(dirname "$FILE_PATH")" && pwd)/$(basename "$FILE_PATH")
 
-# ── Skip paths that are expected to contain secrets or are irrelevant ──
-echo "$FILE_PATH" | grep -q '/\.env$' && exit 0
-echo "$FILE_PATH" | grep -q '/\.env\.example$' && exit 0
-echo "$FILE_PATH" | grep -qE '(trivy\.yaml|trivy-secret\.yaml)$' && exit 0
-echo "$FILE_PATH" | grep -q '/\.claude/hooks/' && exit 0
-echo "$FILE_PATH" | grep -q '/\.git/' && exit 0
-
 # Skip empty files
 [[ ! -s "$FILE_PATH" ]] && exit 0
 
@@ -38,11 +29,9 @@ if ! command -v trivy &>/dev/null; then
   exit 0
 fi
 
-# ── Run Trivy: secret + misconfig scan on the single file ─────────────
+# ── Run Trivy — config in trivy.yaml, custom rules in trivy-secret.yaml ──
 OUTPUT=$(trivy fs \
-  --scanners secret,misconfig \
-  --secret-config /workspace/trivy-secret.yaml \
-  --severity CRITICAL,HIGH,MEDIUM \
+  --config /workspace/trivy.yaml \
   --format table \
   --quiet \
   "$FILE_PATH" 2>&1) || true

@@ -1,26 +1,76 @@
-# trivy.yaml — Scan strategy reference for the .init project
+# trivy.yaml — Trivy configuration for the .init project
 #
-# This file documents the scanning strategy. The actual Trivy invocations
-# use CLI flags (not this file as --config). See:
-#   - .claude/hooks/trivy-scan.sh   (per-file hook on Edit/Write)
-#   - .github/workflows/trivy.yml   (full repo CI scan)
+# Loaded automatically by `trivy fs` (via -c, --config default).
+# Custom secret rules live in trivy-secret.yaml (referenced below).
 #
-# ─── Strategy ───────────────────────────────────────────────────────
-#
-# Scanners:    secret, misconfig
-# Severity:    CRITICAL, HIGH, MEDIUM
-#
-# misconfig scanners:
-#   - dockerfile        (base images, root users, cache states)
-#   - terraform         (future-proof for IaC)
-#   - kubernetes        (catches issues in standard YAML files)
-#   - include-non-iac-files: true
-#
-# secret skip-files:
-#   - node_modules/**
-#   - .git/**
-#
-# Custom rules (loaded via --secret-config trivy-secret.yaml):
-#   - OpenAI/LiteLLM API keys (sk-/pk- prefixes)
-#   - Database connection strings with credentials
-# ────────────────────────────────────────────────────────────────────
+# Two touchpoints:
+#   - .claude/hooks/trivy-scan.sh   → per-file scan on every Edit/Write
+#   - .github/workflows/trivy.yml   → full repo scan in CI
+
+# ── What to scan ──────────────────────────────────────────────────────────
+scanners:
+  - secret
+  - misconfig
+
+severity:
+  - CRITICAL
+  - HIGH
+  - MEDIUM
+
+# ── Misconfiguration scanning ────────────────────────────────────────────
+# dockerfile  → our two Dockerfiles (llama-cpp-dgx, claude-code)
+# kubernetes  → docker-compose YAMLs (Trivy treats them as k8s-style configs)
+# terraform   → future-proof if we add IaC later
+misconfiguration:
+  scanners:
+    - dockerfile
+    - kubernetes
+    - terraform
+  # Don't download check updates on every scan (CI caches, local is fast)
+  skip-check-update: true
+
+# ── Secret scanning ──────────────────────────────────────────────────────
+secret:
+  config: trivy-secret.yaml
+
+# ── Paths to skip ────────────────────────────────────────────────────────
+scan:
+  skip-dirs:
+    - .cache
+    - .git
+    - .claude/sessions
+    - .claude/plugins
+    - .claude/projects
+    - .claude/tasks
+    - .claude/file-history
+    - .claude/backups
+    - .claude/paste-cache
+    - .claude/history.jsonl
+    - interfaces/llama-cpp/build
+    - build
+    - dist
+    - node_modules
+    - .venv
+    - venv
+    - .pytest_cache
+    - .mypy_cache
+    - .ruff_cache
+    - .trivy
+    - .cache/trivy
+  skip-files:
+    - .env
+    - .env.local
+    - .env.*
+    - "*.gguf"
+    - "*.safetensors"
+    - "*.bin"
+    - "*.pt"
+    - "*.ckpt"
+
+# ── Cache ────────────────────────────────────────────────────────────────
+# Use .trivy/ instead of .cache/trivy/ (which is owned by root on DGX)
+cache:
+  dir: .trivy
+
+# ── Output ───────────────────────────────────────────────────────────────
+quiet: true
