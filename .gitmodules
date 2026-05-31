@@ -7,3 +7,6 @@
 [submodule "models/qwen3.6-35b-a3b-nvfp4-mtp"]
 	path = models/qwen3.6-35b-a3b-nvfp4-mtp
 	url = https://huggingface.co/nilayparikh/Qwen3.6-35B-A3B-NVFP4-MTP-GGUF
+[submodule "/home/nilayparikh/.sources/.init/third-party/parakeet.cpp"]
+	path = /home/nilayparikh/.sources/.init/third-party/parakeet.cpp
+	url = https://github.com/mudler/parakeet.cpp
