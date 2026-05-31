@@ -6,6 +6,59 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 `.init` is a modular Docker Compose platform for local AI inference and observability on NVIDIA DGX/Spark hardware. It brings together data storage (PostgreSQL), full-stack observability (Grafana/Mimir/Loki/Alloy/DCGM), and OpenAI-compatible AI inference (LiteLLM + llama.cpp) — all composable via Docker Compose profiles.
 
+## Agent Execution Architecture
+
+Every request in this project follows a two-tier architecture. This is not optional — apply it to all tasks.
+
+### Tier 1: Orchestrator (.INIT/Flash)
+
+- Large context (256K) + vision for broad understanding
+- Responsibilities: parse user intent, discover relevant files, analyze images, communicate results
+- **Must NOT** write implementation code directly
+
+### Tier 2: Worker (.INIT/Pro)
+
+- Deep reasoning for precise execution
+- Responsibilities: architecture decisions, code implementation, complex refactors, final script writing
+- **Must NOT** do broad codebase searches (delegate to Flash/Explore)
+
+### Delegation Protocol
+
+For every non-trivial request, the orchestrator MUST:
+
+1. **Analyze** the request with Flash (broad context, file discovery)
+2. **Specify** a `<task_specification>` with exact requirements
+3. **Delegate** to the appropriate worker subagent
+4. **Verify** the worker's output with Flash
+5. **Synthesize** results and communicate to user
+
+### Task Routing
+
+| Task Type | Flow |
+|-----------|------|
+| Quick lookup / search | Flash only (no worker needed) |
+| Single file edit | Flash analyzes → Pro implements → Flash verifies |
+| Multi-file change | Flash discovers → Pro implements (per file) → Flash verifies all |
+| Codebase audit | Flash fans out (parallel) → Pro synthesizes → Flash verifies |
+| New feature | Flash explores → Pro architects → Pro implements → Flash verifies |
+| Documentation | Flash fact-checks → Pro writes → Flash reviews |
+
+### Subagent Reference
+
+| Subagent | Model | When to Use |
+|----------|-------|-------------|
+| `worker-pro` | Pro | Any implementation task (coding, refactoring, scripts) |
+| `worker-explore` | Flash | Codebase search, context gathering, file discovery |
+| `infra-reviewer` | Pro | Review Docker Compose, configs, GPU setup |
+| `security-reviewer` | Pro | Review secrets, network exposure, container security |
+| `docs-reviewer` | Flash | Review documentation accuracy and consistency |
+
+### What Loads Where
+
+- **CLAUDE.md** → loaded by orchestrator AND all subagents (except Explore/Plan)
+- **Memory files** → loaded at session start for pattern reinforcement
+- **Subagent prompts** → loaded when that subagent is spawned
+
 ## Big-Picture Architecture
 
 Three layers, each independently composable through `COMPOSE_PROFILES`. Every service

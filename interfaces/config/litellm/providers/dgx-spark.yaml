@@ -12,8 +12,7 @@ model_list:
   # Qwen 3.6 27B — primary coding/reasoning model
   # Backend: llama.cpp on localhost:8000
   - model_name: DGX/Qwen3.6-27B
-    litellm_params:
-      &dgx_qwen_params
+    litellm_params: &dgx_qwen_params
       model: openai/os.environ/DGX_SPARK_M_SERVING_MODEL
       api_base: os.environ/DGX_SPARK_M_BASE_URL
       api_key: os.environ/DGX_SPARK_M_API_KEY

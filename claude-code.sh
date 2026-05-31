@@ -44,20 +44,12 @@ if [ "${#CLAUDE_ARGS[@]}" -gt 0 ]; then
 fi
 
 # ==========================================
-# STEP 2: CONDITIONALLY BUILD THE MULTI-TAG IMAGE
+# STEP 2: PULL THE IMAGE DIRECTLY FROM GHCR
 # ==========================================
 TARGET_IMAGE="${REGISTRY}/${IMAGE_NAME}:${VERSION}"
 
-if docker image inspect "$TARGET_IMAGE" >/dev/null 2>&1; then
-    echo "⏭️ [BUILD] Image '${TARGET_IMAGE}' already exists locally. Skipping build phase."
-else
-    echo "🚀 [BUILD] '${TARGET_IMAGE}' not found. Compiling container layers..."
-    docker build \
-      -f docker/claude-code/Dockerfile \
-      -t "${REGISTRY}/${IMAGE_NAME}:${VERSION}" \
-      -t "${REGISTRY}/${IMAGE_NAME}:latest" .
-    echo "✅ [BUILD] Successfully built and tagged both versions."
-fi
+echo "📥 [IMAGE] Pulling '${TARGET_IMAGE}' from GHCR..."
+docker pull "${TARGET_IMAGE}"
 
 # ==========================================
 # STEP 3: REMOVE ANY STALE CONTAINERS
@@ -86,11 +78,11 @@ DOCKER_OPTS=(
   -v "${WORKSPACE_DIR}:/workspace"
   -w /workspace
 
-  # Verified working configuration directory mounts
+  # DUAL-SCOPE CONFIGURATION
+  # Maps host global settings/IDE tokens to the arbitrary user home root fallback
+  -v "${HOME}/.claude:/.claude"
+  # Maps local project settings/history to the workspace folder
   -v "${WORKSPACE_DIR}/.claude:/workspace/.claude"
-  -v "${WORKSPACE_DIR}/.claude.json:/workspace/.claude.json"
-  -e HOME="/workspace"
-  -e CLAUDE_CONFIG_DIR="/workspace/.claude"
   
   # Enable gateway model discovery for LiteLLM proxy model routing
   -e CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY="1"
@@ -109,7 +101,6 @@ DOCKER_OPTS=(
   -e CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC="1"
 
   # Suppress interactive prompts (onboarding, theme, trust, IDE install)
-  -e IS_DEMO="1"
   -e CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL="1"
   -e CLAUDE_CODE_AUTO_CONNECT_IDE="false"
   -e CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL="1"
@@ -126,10 +117,6 @@ DOCKER_OPTS=(
   -e ANTHROPIC_DEFAULT_OPUS_MODEL_NAME=".INIT/Ultra"
   -e ANTHROPIC_DEFAULT_OPUS_MODEL_DESCRIPTION="OpenCodeZen/QWEN3.6-PLUS via LiteLLM"
 
-#   -e ANTHROPIC_DEFAULT_OPUS_MODEL="OpenCodeZen/DEEPSEEK-V4-FLASH-FREE"
-#   -e ANTHROPIC_DEFAULT_OPUS_MODEL_NAME="OpenCodeZen/DEEPSEEK-V4-FLASH-FREE"
-#   -e ANTHROPIC_DEFAULT_OPUS_MODEL_DESCRIPTION="OpenCodeZen/DEEPSEEK-V4-FLASH-FREE via LiteLLM"
-
   -e ANTHROPIC_DEFAULT_SONNET_MODEL=".INIT/Pro"
   -e ANTHROPIC_DEFAULT_SONNET_MODEL_NAME=".INIT/Pro"
   -e ANTHROPIC_DEFAULT_SONNET_MODEL_DESCRIPTION="DGX/Qwen3.6-27B via LiteLLM"
@@ -141,4 +128,3 @@ DOCKER_OPTS=(
 
 # Launch standard execution cleanly without syntax crashes
 docker run "${DOCKER_OPTS[@]}" "${TARGET_IMAGE}" claude --dangerously-skip-permissions "${CLAUDE_ARGS[@]}"
-

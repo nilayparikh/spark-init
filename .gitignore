@@ -66,23 +66,14 @@ dist/
 /observability/volumes/*
 !/observability/volumes/.gitkeep
 
-# Claude Code local settings (machine-specific — keep .claude/settings.json for team)
-.claude/settings.local.json
-.claude/backups
-.claude/plugins
-.claude/file-history
-.claude/plans
-.claude/projects
-.claude/sessions
-.claude/tasks
-.claude/paste-cache
-.claude/file-history
-.claude/.last-cleanup
-.claude/history.jsonl
-.claude/shell-snapshots
-.claude/.claude.json
-.claude/settings.json
-.claude/session-env
+
+# Claude Code local state and context data
+.claude/
+!.claude/settings.json
+!.claude/CLAUDE.md
+
+# Ignore potential env spillages or local json lock states
+.claude.json
 
 # Miscellaneous
 .local

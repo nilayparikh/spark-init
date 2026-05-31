@@ -1,3 +1,0 @@
-- [Model Selection Strategy](model-selection-strategy.md) — When to use .INIT/Pro vs .INIT/Flash and fanout strategy for subagents
-- [Project Goals](project-goals.md) — High-level purpose and design philosophy of the .init platform
-- [Env Protection](env-protection.md) — .env file hooks, secret scanning, and session-end sync reminder
