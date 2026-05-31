@@ -74,10 +74,13 @@ dist/
 
 # Agent
 .agents/
-.agents1/
+
+# VSCode
+.vscode/
 
 # Miscellaneous
 .local
 .npm
 .bash_history
 .trivy
+.plans
