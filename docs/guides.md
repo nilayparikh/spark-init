@@ -27,18 +27,12 @@ sudo nvidia-smi -pm 1
 sudo nvidia-smi --lock-gpu-clocks=208,2418
 ```
 
-A systemd service at `scripts/gpu-persistent-setting.sh` applies these on boot. Install it with:
-
-```bash
-sudo cp scripts/gpu-persistent-setting.sh /usr/local/bin/
-# Create a systemd unit (see the script for the unit file template)
-sudo systemctl enable nvidia-prop.service
-```
+To apply these on boot, create a systemd service or add the commands to `/etc/rc.local`.
 
 ## Add a Cloud Provider
 
 1. Get an API key from the provider
-2. Add it to `.env` (e.g., `NVIDIA_API_KEY=nvapi-...`)
+2. Add it to `.env.secrets` (e.g., `NVIDIA_API_KEY=nvapi-...`)
 3. The provider's YAML fragment in `interfaces/config/litellm/providers/` reads it from the environment variable
 4. Restart LiteLLM: `docker compose restart litellm`
 5. It shows up in `GET /v1/models` automatically
@@ -47,21 +41,23 @@ Available cloud providers are listed in the `.env.example` with their variable n
 
 ## Work with Claude Code
 
+The easiest way is the `claude-code.sh` launcher — it reads your `.env` for model routing and auth, builds/pulls the container image, and starts an isolated Claude Code session routed through the local LiteLLM proxy:
+
 ```bash
-# Point Claude Code at your local proxy
+./claude-code.sh
+# /model .INIT/Pro    → use local 27B
+# /model .INIT/Flash   → use local 35B A3B
+# /model .INIT/Ultra   → use cloud OpenCode Zen (if configured)
+```
+
+You can also point a local `claude` CLI at the proxy directly:
+
+```bash
 export ANTHROPIC_BASE_URL="http://localhost:4000"
 export ANTHROPIC_AUTH_TOKEN="$LITELLM_MASTER_KEY"
 export CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1
 
 claude
-# /model .INIT/Pro  → use local 27B
-# /model .INIT/Flash → use local 35B A3B
-```
-
-The smoke test script validates the whole chain:
-
-```bash
-./scripts/litellm-claude-smoke-test.sh
 ```
 
 ## Use with VS Code / Cline / Continue
@@ -87,7 +83,7 @@ sudo nvidia-ctk runtime configure --runtime=docker
 sudo systemctl restart docker
 ```
 
-Then verify: `docker run --rm --gpus all nvidia/cuda:13.1.2-base-ubuntu24.04 nvidia-smi`
+Then verify: `docker run --rm --gpus all nvidia/cuda:13.1.2-devel-ubuntu24.04 nvidia-smi`
 
 ### Port already in use
 
@@ -122,6 +118,7 @@ docker compose logs --tail=100 <service-name>   # fastest debug tool
 ```
 
 For detailed reference, see the inline comments in:
+
 - `interfaces/docker-compose.interface.yml` — all llama.cpp flags documented
 - `interfaces/config/litellm/config.yaml` — routing and alias configuration
 - `observability/config/config.alloy` — scrape pipelines and label conventions

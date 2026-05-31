@@ -10,24 +10,34 @@ You / VS Code / Claude Code
         ▼
 ┌───────────────────────────────┐
 │   LiteLLM Proxy (:4000)       │  ← API gateway (auth, routing, logging)
-│   interface profile            │
+│   litellm / interface profile  │
 ├───────────────────────────────┤
-│   llama.cpp (:8000 / :8001)   │  ← GPU inference (27B & 35B)
-│   interface profile            │
+│   llama.cpp 27B (:8000)       │  ← GPU inference (128K context)
+│   llama-qwen-3-6-27b profile  │
+├───────────────────────────────┤
+│   llama.cpp 35B A3B (:8001)   │  ← GPU inference (256K context, vision)
+│   llama-qwen-3-6-35b-a3b profile│
 └──────────┬────────────────────┘
            │
            ▼
 ┌───────────────────────────────┐
 │   Alloy → Mimir/Loki          │  ← Auto-collected metrics & logs
-│   obs profile                  │
+│   alloy / mimir / loki profiles│
 ├───────────────────────────────┤
 │   Grafana (:3000)              │  ← Dashboards
+│   grafana profile              │
 └──────────┬────────────────────┘
            │
            ▼
 ┌───────────────────────────────┐
 │   PostgreSQL (:5432)           │  ← Shared database
-│   data profile                 │
+│   postgres / data profile      │
+└───────────────────────────────┘
+           │
+           ▼
+┌───────────────────────────────┐
+│   Cloudflare Tunnel           │  ← External access
+│   cloudflared profile         │
 └───────────────────────────────┘
 ```
 
@@ -51,17 +61,28 @@ No configuration needed to start collecting — Alloy auto-discovers running ser
 
 ### Interfaces Layer (`interfaces/`)
 
-**Runs:** LiteLLM proxy + llama.cpp (one container per model)
+**Runs:** LiteLLM proxy + llama.cpp (two containers, one per model)
 
-LiteLLM is the front door. It authenticates requests, routes by model name, logs usage to Postgres, and exposes Prometheus metrics. llama.cpp containers run on host ports with full GPU access.
+LiteLLM is the front door. It authenticates requests, routes by model name, logs usage to Postgres, and exposes Prometheus metrics. Two llama.cpp containers run on host ports with full GPU access:
+
+- `llama-qwen-3-6-27b` — Qwen 3.6 27B, host port `8000`, 128K context
+- `llama-qwen-3-6-35b-a3b` — Qwen 3.6 35B A3B, host port `8001`, 256K context (vision-capable)
+
+Each has its own unique profile and can run independently or simultaneously.
 
 LiteLLM reaches llama.cpp via `host.docker.internal:8000` (or `:8001`) — the inference containers publish directly to the host network for zero-overhead GPU access.
+
+### Network Layer (`network/`)
+
+**Runs:** Cloudflare Tunnel (`cloudflared`)
+
+The Cloudflare Tunnel provides secure external access to internal services without exposing ports. Configure the tunnel in Cloudflare Zero Trust dashboard and add the tunnel token to `.env.secrets` as `CLOUDFLARE_TUNNEL_TOKEN`.
 
 ## Networking
 
 All containers share the `init_default` external network, defined in `network/docker-compose.yaml`. Services discover each other by container name (Docker's embedded DNS).
 
-The external network is what lets the three compose files talk to each other. Create it once:
+The external network is what lets the four compose files talk to each other. Create it once:
 
 ```bash
 docker network create init_default
@@ -71,11 +92,11 @@ docker network create init_default
 
 ```yaml
 data                        # just Postgres
-data + obs                  # Postgres + Grafana stack
-data + litellm              # Postgres + LiteLLM proxy (cloud models only)
-data + litellm + llama-qwen-3-6-27b  # Postgres + LiteLLM + 27B
-data + obs + interface      # Postgres + Grafana + proxy + both llama.cpp backends
-data + obs + litellm + llama-qwen-3-6-27b  # Postgres + Grafana + LiteLLM + 27B
+data,obs                    # Postgres + Grafana stack
+data,litellm                # Postgres + LiteLLM proxy (cloud models only)
+data,litellm,llama-qwen-3-6-27b  # Postgres + LiteLLM + 27B
+data,obs,interface          # Postgres + Grafana + proxy + both llama.cpp backends
+data,obs,litellm,llama-qwen-3-6-27b  # Postgres + Grafana + LiteLLM + 27B
 all                         # everything
 ```
 

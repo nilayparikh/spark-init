@@ -47,6 +47,9 @@ model_list:
       max_tokens: 131072
       max_input_tokens: 114688
       max_output_tokens: 16384
+      limit:
+        context: 131072
+        output: 16384
       supports_system_messages: true
       supports_native_streaming: true
       supports_vision: false
@@ -62,6 +65,8 @@ model_list:
         - temperature
         - top_p
         - stop
+        - thinking
+        - reasoning_effort
 
   # ── .INIT/Flash alias maps here ───────────────────────────────────────────
   # Qwen 3.6 35B A3B — fast, large-context, vision-capable
@@ -85,4 +90,7 @@ model_list:
       max_tokens: 262144
       max_input_tokens: 245760
       max_output_tokens: 16384
+      limit:
+        context: 262144
+        output: 16384
       supports_vision: true

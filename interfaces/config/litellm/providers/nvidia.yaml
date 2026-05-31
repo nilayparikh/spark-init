@@ -7,6 +7,9 @@ model_list:
       api_key: os.environ/NVIDIA_API_KEY
       timeout: 300
       drop_params: true
+      extra_body:
+        stream_options:
+          include_usage: true
     model_info:
       id: "nvidia-openai-deepseek-v4-flash"
       db_model: false
@@ -46,6 +49,8 @@ model_list:
         temperature: 1.0
         top_p: 0.95
         top_k: 40
+        stream_options:
+          include_usage: true
     model_info:
       id: "nvidia-openai-minimax-m2-7"
       db_model: false
@@ -73,6 +78,8 @@ model_list:
       extra_body:
         chat_template_kwargs:
           thinking: true
+        stream_options:
+          include_usage: true
     model_info:
       id: "nvidia-openai-kimi-k2-6"
       db_model: false
@@ -81,8 +88,10 @@ model_list:
       context_window: 256000
       max_tokens: 256000
       max_input_tokens: 256000
+      max_output_tokens: 16384
       limit:
         context: 256000
+        output: 16384
       supports_system_messages: true
       supports_native_streaming: true
       supports_vision: true

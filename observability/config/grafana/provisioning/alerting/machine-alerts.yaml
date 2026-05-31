@@ -21,7 +21,7 @@ groups:
                 type: prometheus
                 uid: mimir
               editorMode: code
-              expr: max(DCGM_FI_DEV_GPU_TEMP{job="machine-gpu",host="barsana"})
+              expr: max(DCGM_FI_DEV_GPU_TEMP{job="machine-gpu"})
               instant: true
               intervalMs: 1000
               legendFormat: __auto
@@ -92,12 +92,11 @@ groups:
         annotations:
           __dashboardUid__: spark-machine-overview
           __panelId__: "13"
-          summary: GPU thermals on barsana exceeded 82C.
+          summary: GPU thermals exceeded {{ $values.A | humanize }}C.
           description: Check the GPU thermals and power panels for the hottest device.
         labels:
           alertname: spark_gpu_thermal_high
           category: gpu
-          host: barsana
           severity: warning
         isPaused: false
       - uid: spark_filesystem_pressure
@@ -114,7 +113,7 @@ groups:
                 type: prometheus
                 uid: mimir
               editorMode: code
-              expr: max(100 * (1 - (node_filesystem_avail_bytes{job="machine-linux",host="barsana",fstype!~"tmpfs|overlay|squashfs|nsfs",mountpoint!~"/snap.*"} / node_filesystem_size_bytes{job="machine-linux",host="barsana",fstype!~"tmpfs|overlay|squashfs|nsfs",mountpoint!~"/snap.*"})))
+              expr: max(100 * (1 - (node_filesystem_avail_bytes{job="machine-linux",fstype!~"tmpfs|overlay|squashfs|nsfs",mountpoint!~"/snap.*"} / node_filesystem_size_bytes{job="machine-linux",fstype!~"tmpfs|overlay|squashfs|nsfs",mountpoint!~"/snap.*"})))
               instant: true
               intervalMs: 1000
               legendFormat: __auto
@@ -185,12 +184,11 @@ groups:
         annotations:
           __dashboardUid__: spark-machine-overview
           __panelId__: "10"
-          summary: One or more filesystems on barsana exceeded 85% used.
+          summary: One or more filesystems exceeded 85% used.
           description: Check filesystem used and free-space panels before the host runs out of capacity.
         labels:
           alertname: spark_filesystem_pressure
           category: storage
-          host: barsana
           severity: warning
         isPaused: false
       - uid: spark_host_saturated
@@ -207,7 +205,7 @@ groups:
                 type: prometheus
                 uid: mimir
               editorMode: code
-              expr: 100 - (avg(rate(node_cpu_seconds_total{mode="idle",job="machine-linux",host="barsana"}[5m])) * 100)
+              expr: 100 - (avg(rate(node_cpu_seconds_total{mode="idle",job="machine-linux"}[5m])) * 100)
               instant: true
               intervalMs: 1000
               legendFormat: __auto
@@ -278,11 +276,10 @@ groups:
         annotations:
           __dashboardUid__: spark-machine-overview
           __panelId__: "7"
-          summary: CPU busy on barsana stayed above 90% for five minutes.
+          summary: CPU busy stayed above 90% for five minutes.
           description: Check CPU load, memory pressure, and top resource panels for sustained host saturation.
         labels:
           alertname: spark_host_saturated
           category: compute
-          host: barsana
           severity: warning
         isPaused: false

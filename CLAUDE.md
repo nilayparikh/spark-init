@@ -6,58 +6,167 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 `.init` is a modular Docker Compose platform for local AI inference and observability on NVIDIA DGX/Spark hardware. It brings together data storage (PostgreSQL), full-stack observability (Grafana/Mimir/Loki/Alloy/DCGM), and OpenAI-compatible AI inference (LiteLLM + llama.cpp) — all composable via Docker Compose profiles.
 
+## Model Fleet
+
+The platform routes through four models with different capabilities, costs, and constraints.
+Gateway model discovery maps aliases to actual models via `ANTHROPIC_DEFAULT_*_MODEL` env vars
+set by `claude-code.sh`:
+
+| Alias | Agent Model | Actual Model | Host | Cost | Concurrency | Best For |
+|-------|------------|-------------|------|------|-------------|----------|
+| **.INIT/Ultra** | `opus` | DeepSeek-V4-Pro | External | $$$$ | Many parallel | Architecture, planning, complex reasoning |
+| **.INIT/Pro** | `sonnet` | DGX/Qwen3.6-27B | Local (port 8000) | Free | **1 only** | Bounded implementation, precise code writing |
+| **.INIT/Flash** | `haiku` | DeepSeek-V4-Flash | External | $ | Many parallel | Discovery, searching, broad scanning, web research |
+| **.INIT/Air** | `.INIT/Air` | DGX/Qwen3.6-35B-A3B | Local (port 8001) | Free | **1 only** | Mechanical scanning, large-file reading (256K ctx), pattern matching |
+
+### ⚠️ Critical: Local Model Concurrency
+
+**Pro and AIR each run on a llama.cpp backend that handles exactly ONE request at a time.**
+This is the single most important constraint for this project:
+
+- ❌ **Never** spawn two Pro agents simultaneously — they share port 8000
+- ❌ **Never** spawn two AIR agents simultaneously — they share port 8001
+- ✅ Pro (port 8000) and AIR (port 8001) CAN run simultaneously — different backends
+- ✅ Flash and Ultra CAN run in parallel with anything — external APIs handle concurrency
+- ✅ `pipeline()` with a single Pro/AIR stage serializes automatically
+
 ## Agent Execution Architecture
 
-Every request in this project follows a two-tier architecture. This is not optional — apply it to all tasks.
+Every non-trivial task follows a **cost-aware, model-optimized** execution pattern.
+Choose the architectural pattern based on task complexity:
 
-### Tier 1: Orchestrator (.INIT/Flash)
+### Tier Model
 
-- Large context (256K) + vision for broad understanding
-- Responsibilities: parse user intent, discover relevant files, analyze images, communicate results
-- **Must NOT** write implementation code directly
+| Tier | Model | Role |
+|------|-------|------|
+| **Orchestrator** | Flash (haiku) | Parse intent, discover files, communicate results, spawn agents/workflows |
+| **Planner** | Ultra (opus) | Architecture decisions, complex reasoning, workflow design |
+| **Implementer** | Pro (sonnet) | Code generation, refactoring, precise file edits |
+| **Scanner** | AIR (.INIT/Air) | Bulk file reading, pattern matching, cross-reference sweeps |
+| **Reviewer** | Flash or Pro | Broad scanning (Flash) or deep verification (Pro) |
 
-### Tier 2: Worker (.INIT/Pro)
+### Decision Tree — How to Route Work
 
-- Deep reasoning for precise execution
-- Responsibilities: architecture decisions, code implementation, complex refactors, final script writing
-- **Must NOT** do broad codebase searches (delegate to Flash/Explore)
+```
+Task received
+│
+├─ TRIVIAL? (typo, single-line fix, rename, simple question)
+│  → Handle inline. No agents needed. Flash orchestrator does it directly.
+│
+├─ SIMPLE? (1-2 files, well-defined change, no discovery needed)
+│  → Spawn 1 Pro agent (worker-pro). Bounded, isolated, free.
+│
+├─ DISCOVERY-HEAVY? (need to find files, understand patterns)
+│  → Light workflow:
+│     Phase 1: 2-4 Flash agents scan in parallel (cheap, fast)
+│     Phase 2: 1-2 Pro agents implement per finding (pipeline, serialized)
+│
+├─ MULTI-FILE? (3+ files, dependencies, architectural impact)
+│  → Full workflow:
+│     Phase 1: Flash agents discover (parallel)
+│     Phase 2: Ultra plans architecture (workflow-designer)
+│     Phase 3: Pro agents implement (pipeline — serialized)
+│     Phase 4: Flash agents review (parallel, adversarial)
+│
+├─ AUDIT / SWEEP? (codebase-wide, security, quality)
+│  → Sweep workflow:
+│     Phase 1: Flash + AIR scan dimensions (parallel)
+│     Phase 2: Deduplicate findings (inline in script)
+│     Phase 3: Pro verifies each finding (pipeline — serialized)
+│     Phase 4: Flash synthesizes report
+│
+├─ RESEARCH? (multi-source, before any code)
+│  → Research workflow:
+│     Phase 1: Flash agents research multiple angles (parallel, WebSearch)
+│     Phase 2: Ultra synthesizes findings
+│
+└─ MIGRATION? (many files, pattern-based mechanical changes)
+   → Pipeline workflow:
+      Phase 1: AIR discovers all sites (1 agent, 256K context)
+      Phase 2: Pro implements per file (pipeline — serialized)
+      Phase 3: Flash reviews all changes (parallel)
+```
 
-### Delegation Protocol
+### Cost Optimization Rules
 
-For every non-trivial request, the orchestrator MUST:
-
-1. **Analyze** the request with Flash (broad context, file discovery)
-2. **Specify** a `<task_specification>` with exact requirements
-3. **Delegate** to the appropriate worker subagent
-4. **Verify** the worker's output with Flash
-5. **Synthesize** results and communicate to user
-
-### Task Routing
-
-| Task Type | Flow |
-|-----------|------|
-| Quick lookup / search | Flash only (no worker needed) |
-| Single file edit | Flash analyzes → Pro implements → Flash verifies |
-| Multi-file change | Flash discovers → Pro implements (per file) → Flash verifies all |
-| Codebase audit | Flash fans out (parallel) → Pro synthesizes → Flash verifies |
-| New feature | Flash explores → Pro architects → Pro implements → Flash verifies |
-| Documentation | Flash fact-checks → Pro writes → Flash reviews |
+| Rule | Rationale |
+|------|-----------|
+| Discovery **always** Flash | 12x cheaper than Ultra, faster, parallel-capable |
+| Implementation **always** Pro | Free (local GPU), and bounded implementation is its strength |
+| Architecture/planning **always** Ultra | Only model smart enough for complex multi-file planning |
+| Mechanical scanning **always** AIR | Free, 256K context, good enough for grep/find-like work |
+| Review **Flash-first** | Broad scan cheaply; Pro for deep verification of specific findings |
+| Serialize Pro & AIR | Local models reject concurrent requests |
+| Batch external models | Flash and Ultra agents run freely in parallel |
 
 ### Subagent Reference
 
-| Subagent | Model | When to Use |
-|----------|-------|-------------|
-| `worker-pro` | Pro | Any implementation task (coding, refactoring, scripts) |
-| `worker-explore` | Flash | Codebase search, context gathering, file discovery |
-| `infra-reviewer` | Pro | Review Docker Compose, configs, GPU setup |
-| `security-reviewer` | Pro | Review secrets, network exposure, container security |
-| `docs-reviewer` | Flash | Review documentation accuracy and consistency |
+| Subagent | Model | Tools | When to Use |
+|----------|-------|-------|-------------|
+| `worker-explore` | Flash (haiku) | Glob, Grep, LS, Read, Bash, WebFetch, WebSearch | Codebase search, context gathering, file discovery |
+| `worker-pro` | Pro (sonnet) | * (all) | Bounded implementation: coding, refactoring, script writing. **Serialize.** |
+| `worker-air` | AIR (.INIT/Air) | Read, Glob, Grep, LS, Bash, WebFetch | Mechanical scanning, large-file reading, pattern matching. **Serialize.** |
+| `workflow-designer` | Ultra (opus) | Read, Glob, Grep, LS, Bash, WebFetch, WebSearch | Design optimal workflow scripts for complex multi-agent tasks |
+| `reviewer` | Flash (haiku) | Read, Glob, Grep, LS, Bash, WebFetch, WebSearch | General code review — broad scanning (Flash) or deep verification (override to Pro) |
+| `infra-reviewer` | Pro (sonnet) | * (all) | Docker Compose, configs, GPU setup review |
+| `security-reviewer` | Pro (sonnet) | * (all) | Secrets, network exposure, container security review |
+| `docs-reviewer` | Flash (haiku) | Read, Glob, Grep, LS, Bash, WebFetch | Documentation accuracy and consistency review |
+
+### Agent Serialization in Workflows
+
+When writing workflow scripts, follow these serialization rules:
+
+```js
+// ✅ CORRECT: Pro agents serialized via pipeline()
+pipeline(
+  implementationTasks,
+  task => agent(task.prompt, {model: 'sonnet', phase: 'Implement'})
+)
+
+// ✅ CORRECT: AIR agents serialized via pipeline()
+pipeline(
+  scanTasks,
+  task => agent(task.prompt, {model: '.INIT/Air', phase: 'Scan'})
+)
+
+// ✅ CORRECT: Flash agents in parallel (external API)
+const results = await parallel([
+  () => agent('Scan auth', {model: 'haiku', phase: 'Discover'}),
+  () => agent('Scan routes', {model: 'haiku', phase: 'Discover'}),
+  () => agent('Scan configs', {model: 'haiku', phase: 'Discover'}),
+])
+
+// ✅ CORRECT: Pro + AIR concurrently (different backends)
+const [proResult, airResult] = await parallel([
+  () => agent('Implement X', {model: 'sonnet', phase: 'Implement'}),
+  () => agent('Scan configs', {model: '.INIT/Air', phase: 'Scan'}),
+])
+
+// ❌ WRONG: Two Pro agents in parallel (same backend, will fail)
+const results = await parallel([
+  () => agent('Implement X', {model: 'sonnet'}),
+  () => agent('Implement Y', {model: 'sonnet'}),
+])
+```
+
+### Delegation Protocol
+
+For inline agent spawning (not workflow scripts):
+
+1. **Analyze** with Flash — discover files, understand scope
+2. **Specify** a `<task_specification>` with exact requirements
+3. **Delegate** to the right model:
+   - Simple bounded change → 1 Pro agent
+   - Complex multi-file → spawn workflow-designer first, then execute its plan
+4. **Verify** with Flash reviewer after each change
+5. **Synthesize** and communicate to user
 
 ### What Loads Where
 
-- **CLAUDE.md** → loaded by orchestrator AND all subagents (except Explore/Plan)
+- **CLAUDE.md** → loaded by orchestrator AND all subagents
 - **Memory files** → loaded at session start for pattern reinforcement
 - **Subagent prompts** → loaded when that subagent is spawned
+- **Workflow scripts** → in `.claude/workflows/` (project) or `~/.claude/workflows/` (user)
 
 ## Big-Picture Architecture
 
@@ -93,7 +202,8 @@ Data flow: clients → LiteLLM proxy (`:4000`) → llama.cpp (`:8000`) → GPU. 
 
 ```bash
 # Full stack (all layers + both llama.cpp backends)
-docker compose up -d
+# Secrets come from ~/.bashrc (exported env vars); .env provides paths/profiles
+docker compose --env-file .env up -d
 
 # Check status
 docker compose ps
@@ -107,7 +217,7 @@ docker compose down
 Each service has a unique profile. Stack profiles (`data`, `obs`, `interface`) activate
 all services in a layer. Use `all` to start everything.
 
-Edit `COMPOSE_PROFILES` in `.env`, then run `docker compose up -d`. Common shapes:
+Edit `COMPOSE_PROFILES` in `.env`, then run `docker compose --env-file .env up -d`. Common shapes:
 
 ```
 # Full stack (all layers + both llama.cpp backends)
@@ -139,35 +249,57 @@ COMPOSE_PROFILES=postgres
 
 ### Environment
 
-Copy `.env.example` to `.env` and update secrets and paths. Before first use, also initialize submodules:
+First-time setup — copy the template and initialize submodules:
 
 ```bash
-cp .env.example .env
-git submodule update --init --recursive
+cp .env.example .env                      # edit with your paths and hostname
+git submodule update --init --recursive    # pulls llama.cpp + model weights
+```
+
+Secrets (API keys, passwords) are stored in a separate `.env.secrets` file at an
+external location and sourced via `~/.bashrc`:
+
+```bash
+# In ~/.bashrc:
+export $(grep -v '^#' /path/to/.env.secrets | xargs)
+```
+
+`.env.secrets.example` is tracked in git as a template — copy it to your secrets
+location and fill in values. Never commit `.env.secrets`.
+
+Then start with:
+
+```bash
+docker compose --env-file .env up -d
 ```
 
 Critical settings:
 
-- `LLAMA_QWEN_3_6_27B_GGUF_MODEL_PATH` — must point to a valid GGUF model file on disk
-- `LITELLM_MASTER_KEY` — auth key for the proxy
+- `LLAMA_QWEN_3_6_27B_GGUF_MODEL_PATH` — must point to a valid GGUF model file on disk (set in `.env`)
+- `LITELLM_MASTER_KEY` — auth key for the proxy (set in `.env.secrets`, loaded via `~/.bashrc`)
 
 ### Secret Protection
 
-A single Trivy-based hook replaces the old multi-hook system:
+A unified Trivy-based system with two layers of scanning and one CI pipeline:
 
-| Component | What it does |
-|-----------|-------------|
-| **PostToolUse hook** | `.claude/hooks/trivy-scan.sh` — scans every written file for secrets and misconfigurations using Trivy (scanners: `secret`, `misconfig`; severity: CRITICAL, HIGH, MEDIUM) |
-| **CI workflow** | `.github/workflows/trivy.yml` — full repo scan on push/PR + daily scheduled scan |
-| **Custom rules** | `trivy-secret.yaml` — project-specific patterns (OpenAI keys, DB connection strings) |
-| **Sync check** | `.claude/hooks/compare-env.sh` — run `! .claude/hooks/compare-env.sh` at session end to compare `.env` vs `.env.example` key names |
+| Touchpoint | What it does |
+|------------|-------------|
+| **Per-write hook** | `trivy-scan.sh` — scans every written file immediately (default mode) |
+| **End-of-session sweep** | `trivy-scan.sh MODE=end-of-session` — scans all `git diff --name-only` changed files |
+| **CI workflow** | `.github/workflows/trivy.yml` — full repo scan on push/PR + daily |
+
+The config files that drive these scans:
+
+- `trivy.yaml` — config: scanners, severity, paths
+- `trivy-secret.yaml` — rules: custom regex patterns
 
 **Working with secrets:**
 
-- **Always** use `.env.example` for template changes (never `.env` directly)
+- **Always** use `.env.example` for `.env` template changes (never edit `.env`-checked-in)
+- `.env.secrets` is stored **externally** — loaded by `~/.bashrc`, never in the repo
 - **Never** hardcode a secret in source code — reference it via an environment variable
 - **At session end**, run `! .claude/hooks/compare-env.sh` to check if `.env` needs updating
-- **Secret values in .env** can only be checked by the user directly (`grep VAR .env`)
+- **Secret values** can only be checked by the user directly (`grep VAR /path/to/.env.secrets`)
 - **False positives** → add allow-rules to `trivy-secret.yaml`
 
 ## Linting & CI
@@ -186,6 +318,8 @@ shellcheck scripts/*.sh data/config/postgres-init/*.sh
 # Python syntax check
 find scripts/ -name '*.py' -print0 | xargs -0 -I{} python3 -m py_compile {}
 ```
+
+The `scripts/` directory is currently empty, so the ShellCheck and Python jobs are no-ops. If scripts are re-added, those checks resume coverage automatically.
 
 GitHub Actions (`.github/workflows/`):
 
@@ -213,7 +347,7 @@ Each image is also built by CI when its `docker/<image>/` directory changes.
 
 Launches an isolated Claude Code container (NVIDIA PyTorch base) routed through the local LiteLLM proxy. It:
 
-1. Parses `.env` for model routing and auth tokens
+1. Reads `.env` for model routing; auth tokens come from environment (exported by `~/.bashrc`)
 2. Builds the container image from `docker/claude-code/Dockerfile` if not cached
 3. Runs Claude Code with `ANTHROPIC_BASE_URL` pointing to the LiteLLM proxy at `http://barsana.local:4000`
 
@@ -232,9 +366,12 @@ This indexed catalog covers all source files, configuration, and documentation. 
 | `claude-code.sh` | Launch Claude Code container routed through LiteLLM proxy |
 | `mkdocs.yml` | MkDocs site configuration (Material theme) |
 | `CLAUDE.md` | This file — guidance for AI agents |
-| `.claude/hooks/` | Trivy-based security scanning hooks |
+| `.env.secrets.example` | Secret variables template (API keys, passwords) |
+| `.claude/hooks/` | Trivy-based security scanning + env comparison hooks |
 | `trivy.yaml` | Trivy scan strategy reference |
 | `trivy-secret.yaml` | Custom Trivy secret rules (OpenAI keys, DB strings) |
+| `CHANGELOG.md` / `CONTRIBUTING.md` / `SECURITY.md` / `CODE_OF_CONDUCT.md` | Standard community health files |
+| `third-party/README.md` | Third-party dependency and submodule notes |
 
 ### Data Layer (`data/`)
 
@@ -249,6 +386,7 @@ This indexed catalog covers all source files, configuration, and documentation. 
 | File | Purpose |
 | -------------------------------------------------------- | --------------------------------------------------------- |
 | `interfaces/docker-compose.interface.yml` | LiteLLM proxy + llama.cpp service definitions (all flags documented inline) |
+| `interfaces/README.md` | Interfaces layer overview — architecture and design decisions |
 | `interfaces/config/litellm/config.yaml` | LiteLLM routing: provider includes, model_group_alias, retry policy |
 | `interfaces/config/litellm/providers/dgx-spark.yaml` | Local DGX model routing (27B + 35B A3B) |
 | `interfaces/config/litellm/providers/azure-foundry.yaml` | Azure Foundry cloud models |
@@ -274,7 +412,7 @@ This indexed catalog covers all source files, configuration, and documentation. 
 | `observability/config/loki-config.yaml` | Loki single-binary storage config |
 | `observability/config/mimir-config.yaml` | Mimir single-binary storage config |
 | `observability/config/grafana/provisioning/datasources/` | Mimir + Loki data source definitions |
-| `observability/config/grafana/provisioning/dashboards/machine/` | JSON dashboard definitions (7 dashboards) |
+| `observability/config/grafana/provisioning/dashboards/machine/` | JSON dashboard definitions |
 | `observability/config/grafana/provisioning/alerting/machine-alerts.yaml` | Alert rules (GPU thermal, filesystem, host saturation) |
 
 ### Network (`network/`)
@@ -286,13 +424,8 @@ This indexed catalog covers all source files, configuration, and documentation. 
 ### Scripts (`scripts/`)
 
 | File | Purpose |
-| ------------------------------------------- | --------------------------------------------------------- |
-| `scripts/gpu-persistent-setting.sh` | Apply persistent GPU mode + lock clock speeds |
-| `scripts/litellm-claude-smoke-test.sh` | Validate Claude Code model discovery + routing |
-| `scripts/spark-gpu-smoke-test.py` | Verify GPU, CUDA, and container toolkit |
-| `scripts/spark-gpu-throttle-test.py` | GPU throttle behavior testing |
-| `scripts/spark-a3b-long-context-harness.py` | Long-context inference benchmark |
-| `scripts/nvidia_system_info.py` | System information reporter |
+| ---- | ------- |
+| *(empty)* | All scripts were removed. ShellCheck/Python CI jobs are no-ops until scripts are re-added. |
 
 ### Documentation (`docs/`)
 
@@ -301,6 +434,7 @@ This indexed catalog covers all source files, configuration, and documentation. 
 | `docs/index.md` | Project overview and quick start |
 | `docs/quickstart.md` | 5-minute getting-started guide |
 | `docs/capabilities.md` | Feature-driven capability reference |
+| `docs/label-management.md` | Service label conventions and management |
 | `docs/architecture.md` | High-level architecture (one diagram, three layers) |
 | `docs/configuration.md` | How-to configure (profiles, .env) |
 | `docs/guides.md` | Task-oriented recipes (add model, GPU tuning, troubleshooting) |

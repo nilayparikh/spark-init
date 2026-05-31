@@ -1,6 +1,6 @@
 site_name: ".init Stack"
 site_description: "One Docker Compose stack for AI-augmented software engineering on NVIDIA DGX Spark — local models, observability, multi-provider routing"
-repo_url: https://github.com/nilayparikh/init-stack
+repo_url: https://github.com/nilayparikh/spark-init
 docs_dir: docs
 
 theme:
@@ -46,4 +46,10 @@ nav:
   - Architecture: architecture.md
   - Configuration: configuration.md
   - Guides: guides.md
+  - Usage:
+      - "Overview": usage/index.md
+      - "Prompt Engineering": usage/prompt-engineering.md
+      - "Workflows": usage/workflows.md
+      - "Examples": usage/examples.md
   - Reference: reference.md
+  - Label Management: label-management.md

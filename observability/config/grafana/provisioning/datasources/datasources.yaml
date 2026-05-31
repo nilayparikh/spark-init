@@ -20,4 +20,4 @@ datasources:
     url: http://loki:3100
     editable: false
     jsonData:
-      maxLines: 1000
+      maxLines: ${OBSERVABILITY_GRAFANA_MAX_LINES:-1000}

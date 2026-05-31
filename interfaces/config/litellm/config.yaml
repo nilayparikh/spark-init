@@ -28,31 +28,40 @@ general_settings:
   store_prompts_in_spend_logs: true
 
 router_settings:
-  num_retries: 5      # Retry on timeout/rate-limit (not on auth errors)
-  retry_after: 0
+  num_retries: os.environ/LITELLM_NUM_RETRIES # Retry on timeout/rate-limit (not on auth errors)
+  retry_after: os.environ/LITELLM_RETRY_AFTER
+  allowed_fails: 3 # Cooldown model after 3 failures in 1 min
   # ── Model group aliases for Claude Code ──────────────────────────────────
   # These map short .INIT/ names to specific provider models.
   # Claude Code discovers them via gateway model discovery (/v1/models)
   # and presents them in /model.
   # ──────────────────────────────────────────────────────────────────────────
   model_group_alias:
-    ".INIT/Ultra": "OpenCodeZen/BIG-PICKLE"
-    ".INIT/Pro": "DGX/Qwen3.6-27B"
-    ".INIT/Flash": "DGX/Qwen3.6-35B-A3B"
+    ".INIT/Ultra": os.environ/LITELLM_MODEL_ALIAS_ULTRA
+    ".INIT/Pro": os.environ/LITELLM_MODEL_ALIAS_PRO
+    ".INIT/Flash": os.environ/LITELLM_MODEL_ALIAS_FLASH
+    ".INIT/Air": os.environ/LITELLM_MODEL_ALIAS_AIR
+  # ── Context window fallbacks ─────────────────────────────────────────────
+  # When a request exceeds the primary model's context window, LiteLLM
+  # auto-falls back to the specified larger-context model.
+  # DGX 27B (131K) → DGX 35B A3B (256K)
+  # ──────────────────────────────────────────────────────────────────────────
+  context_window_fallbacks:
+    - "DGX/Qwen3.6-27B": ["DGX/Qwen3.6-35B-A3B"]
   retry_policy:
     AuthenticationErrorRetries: 0
-    TimeoutErrorRetries: 5
-    RateLimitErrorRetries: 5
+    TimeoutErrorRetries: os.environ/LITELLM_TIMEOUT_ERROR_RETRIES
+    RateLimitErrorRetries: os.environ/LITELLM_RATE_LIMIT_ERROR_RETRIES
     ContentPolicyViolationErrorRetries: 0
-    InternalServerErrorRetries: 5
+    InternalServerErrorRetries: os.environ/LITELLM_INTERNAL_ERROR_RETRIES
 
 litellm_settings:
-  always_include_stream_usage: true
-  drop_params: true
-  redact_user_api_key_info: true
-  turn_off_message_logging: false
-  json_logs: true
+  always_include_stream_usage: os.environ/LITELLM_STREAM_USAGE
+  drop_params: os.environ/LITELLM_DROP_PARAMS
+  redact_user_api_key_info: os.environ/LITELLM_REDACT_USER_API_KEY
+  turn_off_message_logging: os.environ/LITELLM_TURN_OFF_MSG_LOGGING
+  json_logs: os.environ/LITELLM_JSON_LOGS
   use_chat_completions_url_for_anthropic_messages: true
   callbacks:
     - prometheus
-  require_auth_for_metrics_endpoint: false
+  require_auth_for_metrics_endpoint: os.environ/LITELLM_REQUIRE_AUTH_METRICS

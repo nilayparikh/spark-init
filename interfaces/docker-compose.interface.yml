@@ -32,6 +32,9 @@ services:
       - all
     labels:
       "init.profile_name": "interface"
+    depends_on:
+      postgres:
+        condition: service_healthy
     command:
       - --config
       - /app/litellm-config/config.yaml
@@ -55,24 +58,52 @@ services:
       # Postgres connection for spend logging + provider config storage
       DATABASE_URL: ${INTERFACE_DATABASE_URL:-postgresql://litellm_interface:litellm_interface_local@postgres:5432/litellm_interface}
 
+      # ── LiteLLM Router Settings ─────────────────────────────────────────
+      # Routed into LiteLLM via os.environ/ in config.yaml router_settings block
+      LITELLM_NUM_RETRIES: ${LITELLM_NUM_RETRIES:-5}
+      LITELLM_RETRY_AFTER: ${LITELLM_RETRY_AFTER:-0}
+      LITELLM_TIMEOUT_ERROR_RETRIES: ${LITELLM_TIMEOUT_ERROR_RETRIES:-5}
+      LITELLM_RATE_LIMIT_ERROR_RETRIES: ${LITELLM_RATE_LIMIT_ERROR_RETRIES:-5}
+      LITELLM_INTERNAL_ERROR_RETRIES: ${LITELLM_INTERNAL_ERROR_RETRIES:-5}
+      LITELLM_MODEL_ALIAS_ULTRA: ${LITELLM_MODEL_ALIAS_ULTRA:-OpenCodeZen/BIG-PICKLE}
+      LITELLM_MODEL_ALIAS_PRO: ${LITELLM_MODEL_ALIAS_PRO:-DGX/Qwen3.6-27B}
+      LITELLM_MODEL_ALIAS_FLASH: ${LITELLM_MODEL_ALIAS_FLASH:-DGX/Qwen3.6-35B-A3B}
+      LITELLM_JSON_LOGS: ${LITELLM_JSON_LOGS:-true}
+      LITELLM_DROP_PARAMS: ${LITELLM_DROP_PARAMS:-true}
+      LITELLM_REDACT_USER_API_KEY: ${LITELLM_REDACT_USER_API_KEY:-true}
+      LITELLM_REQUIRE_AUTH_METRICS: ${LITELLM_REQUIRE_AUTH_METRICS:-false}
+      LITELLM_TURN_OFF_MSG_LOGGING: ${LITELLM_TURN_OFF_MSG_LOGGING:-false}
+      LITELLM_STREAM_USAGE: ${LITELLM_STREAM_USAGE:-true}
+
+      # ── Inference Engine Tuning (shared with llama.cpp) ─────────────────
+      # These drive llama.cpp CLI flags. LiteLLM model params (max_tokens,
+      # temperature, seed, etc.) are hardcoded in providers/dgx-spark.yaml.
+      # 27B (.INIT/Pro)
+      INFERENCE_QWEN_27B_CONTEXT_SIZE: ${INFERENCE_QWEN_27B_CONTEXT_SIZE:-131072}
+      INFERENCE_QWEN_27B_MAX_INPUT_TOKENS: ${INFERENCE_QWEN_27B_MAX_INPUT_TOKENS:-114688}
+      INFERENCE_QWEN_27B_REASONING_BUDGET: ${INFERENCE_QWEN_27B_REASONING_BUDGET:-8192}
+      # 35B A3B (.INIT/Flash)
+      INFERENCE_QWEN_35B_A3B_CONTEXT_SIZE: ${INFERENCE_QWEN_35B_A3B_CONTEXT_SIZE:-262144}
+      INFERENCE_QWEN_35B_A3B_MAX_INPUT_TOKENS: ${INFERENCE_QWEN_35B_A3B_MAX_INPUT_TOKENS:-245760}
+      INFERENCE_QWEN_35B_A3B_REASONING_BUDGET: ${INFERENCE_QWEN_35B_A3B_REASONING_BUDGET:-8192}
+
       # ── Local backends ──────────────────────────────────────────────────
       # Each DGX_* group defines: base URL, API key, and model ID for one backend.
-      # Multiple fallback names allow config migration without breaking .env files.
       # Map to the active profile: M=llama-qwen-3-6-27b (Pro/27B), S=llama-qwen-3-6-35b-a3b (Flash/35B A3B)
-      DGX_SPARK_M_BASE_URL: ${DGX_SPARK_M_BASE_URL:-${PRO_BASE_URL:-${INTERFACE_QWEN_3_6_27B_BASE_URL:-http://host.docker.internal:8000/v1}}}
-      DGX_SPARK_M_API_KEY: ${DGX_SPARK_M_API_KEY:-${PRO_API_KEY:-${INTERFACE_QWEN_3_6_27B_API_KEY:-sk-dummy}}}
-      DGX_SPARK_M_SERVING_MODEL: ${DGX_SPARK_M_MODEL:-${PRO_MODEL:-${INTERFACE_QWEN_3_6_27B_MODEL:-openai/qwen3.6_27b}}}
-      DGX_SPARK_S_BASE_URL: ${DGX_SPARK_S_BASE_URL:-${FLASH_BASE_URL:-${INTERFACE_QWEN_3_6_35B_A3B_BASE_URL:-http://host.docker.internal:8001/v1}}}
-      DGX_SPARK_S_API_KEY: ${DGX_SPARK_S_API_KEY:-${FLASH_API_KEY:-${INTERFACE_QWEN_3_6_35B_A3B_API_KEY:-sk-dummy}}}
-      DGX_SPARK_S_SERVING_MODEL: ${DGX_SPARK_S_MODEL:-${FLASH_MODEL:-${INTERFACE_QWEN_3_6_35B_A3B_MODEL:-openai/qwen3.6_35b_a3b}}}
+      DGX_SPARK_M_BASE_URL: ${DGX_SPARK_M_BASE_URL:-http://host.docker.internal:8000/v1}
+      DGX_SPARK_M_API_KEY: ${DGX_SPARK_M_API_KEY:-sk-dummy}
+      DGX_SPARK_M_SERVING_MODEL: ${DGX_SPARK_M_MODEL:-openai/qwen3.6_27b}
+      DGX_SPARK_S_BASE_URL: ${DGX_SPARK_S_BASE_URL:-http://host.docker.internal:8001/v1}
+      DGX_SPARK_S_API_KEY: ${DGX_SPARK_S_API_KEY:-sk-dummy}
+      DGX_SPARK_S_SERVING_MODEL: ${DGX_SPARK_S_MODEL:-openai/qwen3.6_35b_a3b}
 
       # ── Cloud providers ─────────────────────────────────────────────────
       # Each group is read by the matching provider fragment in config/litellm/providers/.
       # Set API keys in .env; leave empty to disable that provider.
       MICROSOFT_FOUNDRY_API_BASE: ${MICROSOFT_FOUNDRY_API_BASE:-https://tuts.services.ai.azure.com/openai/v1}
       MICROSOFT_FOUNDRY_API_KEY: ${MICROSOFT_FOUNDRY_API_KEY:-}
-      AZURE_ORCHESTRATOR_API_BASE: ${AZURE_ORCHESTRATOR_API_BASE:-${MICROSOFT_FOUNDRY_API_BASE:-https://tuts.services.ai.azure.com/openai/v1}}
-      AZURE_ORCHESTRATOR_API_KEY: ${AZURE_ORCHESTRATOR_API_KEY:-${MICROSOFT_FOUNDRY_API_KEY:-}}
+      AZURE_ORCHESTRATOR_API_BASE: ${AZURE_ORCHESTRATOR_API_BASE:-https://tuts.services.ai.azure.com/openai/v1}
+      AZURE_ORCHESTRATOR_API_KEY: ${AZURE_ORCHESTRATOR_API_KEY:-}
       AZURE_ORCHESTRATOR_MODEL: ${AZURE_ORCHESTRATOR_MODEL:-openai/Kimi-K2.6-1}
       NVIDIA_BASE_URL: ${NVIDIA_BASE_URL:-https://integrate.api.nvidia.com/v1}
       NVIDIA_API_KEY: ${NVIDIA_API_KEY:-}
@@ -140,17 +171,17 @@ services:
       - "--reasoning-format"
       - "deepseek"
       - "--reasoning-budget"
-      - "8192"
+      - "${INFERENCE_QWEN_27B_REASONING_BUDGET:-8192}"
       - "--min-p"
-      - "0.05"
+      - "${INFERENCE_QWEN_27B_MIN_P:-0.05}"
       - "--spec-type"
       - "draft-mtp,ngram-mod"
       - "--spec-draft-n-max"
-      - "3"
+      - "${INFERENCE_QWEN_27B_SPEC_DRAFT_N_MAX:-3}"
       - "--spec-draft-p-min"
-      - "0.88"
+      - "${INFERENCE_QWEN_27B_SPEC_DRAFT_P_MIN:-0.88}"
       - "--spec-draft-ngl"
-      - "99"
+      - "${INFERENCE_QWEN_27B_SPEC_DRAFT_NGL:-99}"
       - "-ctk"
       - "f16"
       - "-ctv"
@@ -164,20 +195,20 @@ services:
       - "-fit"
       - "off"
       - "-c"
-      - "131072"
+      - "${INFERENCE_QWEN_27B_CONTEXT_SIZE:-131072}"
       - "-b"
-      - "2048"
+      - "${INFERENCE_QWEN_27B_BATCH_SIZE:-2048}"
       - "-ub"
-      - "512"
+      - "${INFERENCE_QWEN_27B_UBATCH_SIZE:-512}"
       - "--parallel"
       - "1"
       - "--cont-batching"
       - "--cache-prompt"
       - "--swa-full"
       - "-t"
-      - "8"
+      - "${INFERENCE_QWEN_27B_THREADS:-8}"
       - "-tb"
-      - "8"
+      - "${INFERENCE_QWEN_27B_THREADS_BATCH:-8}"
       - "--mlock"
       - "--port"
       - "8080"
@@ -185,7 +216,7 @@ services:
       - "0.0.0.0"
       - "--metrics"
       - "--timeout"
-      - "120"
+      - "${INFERENCE_QWEN_27B_LLAMA_TIMEOUT:-120}"
 
     deploy:
       resources:
@@ -230,8 +261,8 @@ services:
     ports:
       - "${LLAMA_QWEN_3_6_35B_A3B_BIND_HOST:-0.0.0.0}:${LLAMA_QWEN_3_6_35B_A3B_HOST_PORT:-8001}:${LLAMA_QWEN_3_6_35B_A3B_CONTAINER_PORT:-8080}"
     volumes:
-      - ${LLAMA_QWEN_3_6_35B_A3B_GGUF_MODEL_PATH:-../models/.test/qwen3.6-35b-a3b-nvfp4-mtp.gguf}:/models/model.gguf:ro
-      - ${LLAMA_QWEN_3_6_35B_A3B_MMPROJ_MODEL_PATH:-../models/.test/mmproj-BF16.gguf}:/models/mmproj.gguf:ro
+      - ${LLAMA_QWEN_3_6_35B_A3B_GGUF_MODEL_PATH:-../models/qwen3.6-35b-a3b-nvfp4-mtp/qwen3.6-35b-a3b-nvfp4-mtp.gguf}:/models/model.gguf:ro
+      - ${LLAMA_QWEN_3_6_35B_A3B_MMPROJ_MODEL_PATH:-../models/qwen3.6-35b-a3b-nvfp4-mtp/mmproj-BF16.gguf}:/models/mmproj.gguf:ro
       - ./config/qwen3.6/chat_template.jinja:/workspace/chat_template.jinja:ro
     command:
       - "-m"
@@ -248,21 +279,21 @@ services:
       - "--reasoning-format"
       - "deepseek"
       - "--reasoning-budget"
-      - "8192"
+      - "${INFERENCE_QWEN_35B_A3B_REASONING_BUDGET:-8192}"
       - "--min-p"
       - "0.05"
       - "--spec-type"
       - "draft-mtp,ngram-mod"
       - "--spec-draft-n-max"
-      - "2"
+      - "${INFERENCE_QWEN_35B_A3B_SPEC_DRAFT_N_MAX:-2}"
       - "--spec-draft-p-min"
       - "0.88"
       - "--spec-draft-ngl"
       - "99"
       - "-ctk"
-      - "q8_0"
+      - "${INFERENCE_QWEN_35B_A3B_KV_CACHE_TYPE_KEY:-q8_0}"
       - "-ctv"
-      - "q8_0"
+      - "${INFERENCE_QWEN_35B_A3B_KV_CACHE_TYPE_VALUE:-q8_0}"
       - "-ngl"
       - "all"
       - "-fa"
@@ -272,20 +303,20 @@ services:
       - "-fit"
       - "off"
       - "-c"
-      - "262144"
+      - "${INFERENCE_QWEN_35B_A3B_CONTEXT_SIZE:-262144}"
       - "-b"
-      - "2048"
+      - "${INFERENCE_QWEN_35B_A3B_BATCH_SIZE:-2048}"
       - "-ub"
-      - "512"
+      - "${INFERENCE_QWEN_35B_A3B_UBATCH_SIZE:-512}"
       - "--parallel"
       - "1"
       - "--cont-batching"
       - "--cache-prompt"
       - "--swa-full"
       - "-t"
-      - "8"
+      - "${INFERENCE_QWEN_35B_A3B_THREADS:-8}"
       - "-tb"
-      - "8"
+      - "${INFERENCE_QWEN_35B_A3B_THREADS_BATCH:-8}"
       - "--mlock"
       - "--port"
       - "8080"
@@ -293,7 +324,7 @@ services:
       - "0.0.0.0"
       - "--metrics"
       - "--timeout"
-      - "120"
+      - "${INFERENCE_QWEN_35B_A3B_LLAMA_TIMEOUT:-120}"
 
     deploy:
       resources:

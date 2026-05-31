@@ -6,22 +6,23 @@
 
 ## What You Get
 
-| You want to... | `.init` gives you... |
-|---|---|
+| You want to...             | `.init` gives you...                                                                        |
+| -------------------------- | ------------------------------------------------------------------------------------------- |
 | Run local LLMs on your GPU | llama.cpp with Qwen 3.6 models (27B & 35B A3B) behind an OpenAI-compatible proxy on `:4000` |
-| See what's happening | Auto-collected GPU metrics, logs, and dashboards in Grafana on `:3000` |
-| Mix local + cloud models | LiteLLM proxy routes by model name — local stays free, cloud costs what it costs |
-| Use it from any tool | VS Code, Claude Code, cURL, Cline, Continue — anything that speaks OpenAI or Anthropic API |
-| Keep your data private | Everything runs locally. No data leaves your machine unless you add a cloud provider. |
+| See what's happening       | Auto-collected GPU metrics, logs, and dashboards in Grafana on `:3000`                      |
+| Mix local + cloud models   | LiteLLM proxy routes by model name — local stays free, cloud costs what it costs            |
+| Use it from any tool       | VS Code, Claude Code, cURL, Cline, Continue — anything that speaks OpenAI or Anthropic API  |
+| Keep your data private     | Everything runs locally. No data leaves your machine unless you add a cloud provider.       |
 
 ## Quick Start
 
 ```bash
-git clone https://github.com/nilayparikh/init-stack.git
-cd init-stack
+git clone https://github.com/nilayparikh/spark-init.git
+cd spark-init
 git submodule update --init --recursive   # pulls llama.cpp + model weights
 cp .env.example .env                      # configure your paths & keys
-docker compose up -d                      # start everything
+cp .env.secrets.example .env.secrets      # configure secrets
+docker compose --env-file .env --env-file .env.secrets up -d  # start everything
 ```
 
 You're running. Hit `http://localhost:4000/v1/chat/completions` with any OpenAI client.

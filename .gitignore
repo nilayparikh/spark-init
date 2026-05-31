@@ -8,9 +8,13 @@ __pycache__/
 .nox/
 .tox/
 
+# Environment files
+# .env.example is tracked (canonical reference, no PII/secrets)
+# .env.secrets.example is tracked (template for secrets, no real values)
+# .env is NOT tracked (user overrides, may contain hostnames/paths)
+# .env.secrets is NOT tracked and NOT in the repo — stored externally, sourced via ~/.bashrc
 .env
-.env*
-!.env.example
+.env.secrets
 .artifacts
 .plans/
 

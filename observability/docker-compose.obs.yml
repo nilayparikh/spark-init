@@ -22,8 +22,8 @@ services:
   # Scraped by Alloy, queried by Grafana.
   # ──────────────────────────────────────────────────────────────────────────
   mimir:
-    image: grafana/mimir:latest
-    container_name: mimir
+    image: ${MIMIR_IMAGE:-grafana/mimir:latest}
+    container_name: ${MIMIR_CONTAINER_NAME:-mimir}
     restart: "no"
     profiles:
       - mimir
@@ -33,11 +33,13 @@ services:
       "init.profile_name": "obs"
     environment:
       MIMIR_RETENTION_PERIOD: ${MIMIR_RETENTION_PERIOD:-7d}
+      OBSERVABILITY_MIMIR_HTTP_PORT: ${OBSERVABILITY_MIMIR_HTTP_PORT:-9009}
+      OBSERVABILITY_MIMIR_LOG_LEVEL: ${OBSERVABILITY_MIMIR_LOG_LEVEL:-warn}
     command:
       - -config.file=/etc/mimir/mimir-config.yaml
       - -config.expand-env=true
     ports:
-      - "0.0.0.0:9009:9009"
+      - "0.0.0.0:${MIMIR_HOST_PORT:-9009}:9009"
     volumes:
       - ./config/mimir-config.yaml:/etc/mimir/mimir-config.yaml:ro
       - ./config/alertmanager-fallback.yaml:/etc/mimir/alertmanager-fallback.yaml:ro
@@ -50,8 +52,8 @@ services:
   # Queried by Grafana Explore and log dashboards.
   # ──────────────────────────────────────────────────────────────────────────
   loki:
-    image: grafana/loki:latest
-    container_name: loki
+    image: ${LOKI_IMAGE:-grafana/loki:latest}
+    container_name: ${LOKI_CONTAINER_NAME:-loki}
     restart: "no"
     user: "0:0"
     profiles:
@@ -62,11 +64,15 @@ services:
       "init.profile_name": "obs"
     environment:
       LOKI_RETENTION_PERIOD: ${LOKI_RETENTION_PERIOD:-2d}
+      OBSERVABILITY_LOKI_HTTP_PORT: ${OBSERVABILITY_LOKI_HTTP_PORT:-3100}
+      OBSERVABILITY_LOKI_GRPC_PORT: ${OBSERVABILITY_LOKI_GRPC_PORT:-9096}
+      OBSERVABILITY_LOKI_LOG_LEVEL: ${OBSERVABILITY_LOKI_LOG_LEVEL:-warn}
+      OBSERVABILITY_LOKI_COMPACTION_INTERVAL: ${OBSERVABILITY_LOKI_COMPACTION_INTERVAL:-10m}
     command:
       - -config.file=/etc/loki/loki-config.yaml
       - -config.expand-env=true
     ports:
-      - "0.0.0.0:3100:3100"
+      - "0.0.0.0:${LOKI_HOST_PORT:-3100}:3100"
     volumes:
       - ./config/loki-config.yaml:/etc/loki/loki-config.yaml:ro
       - ../data/storage/loki:/var/lib/loki
@@ -79,8 +85,8 @@ services:
   # Auto-discovers services via Docker socket (no config per new service).
   # ──────────────────────────────────────────────────────────────────────────
   alloy:
-    image: grafana/alloy:latest
-    container_name: alloy
+    image: ${ALLOY_IMAGE:-grafana/alloy:latest}
+    container_name: ${ALLOY_CONTAINER_NAME:-alloy}
     restart: "no"
     user: "0:0"
     profiles:
@@ -103,10 +109,30 @@ services:
         condition: service_started
       cadvisor:
         condition: service_started
+    environment:
+      OBSERVABILITY_HOST: ${OBSERVABILITY_HOST:-barsana}
+      OBSERVABILITY_SITE: ${OBSERVABILITY_SITE:-barsana}
+      OBSERVABILITY_ENVIRONMENT: ${OBSERVABILITY_ENVIRONMENT:-personal}
+      OBSERVABILITY_ROLE: ${OBSERVABILITY_ROLE:-spark-dgx}
+      OBSERVABILITY_CLUSTER_TENANT: ${OBSERVABILITY_CLUSTER_TENANT:-spark_dgx_core}
+      OBSERVABILITY_STACK: ${OBSERVABILITY_STACK:-observability-core}
+      OBSERVABILITY_SCRAPE_INTERVAL_HOST: ${OBSERVABILITY_SCRAPE_INTERVAL_HOST:-5s}
+      OBSERVABILITY_SCRAPE_TIMEOUT_HOST: ${OBSERVABILITY_SCRAPE_TIMEOUT_HOST:-4s}
+      OBSERVABILITY_SCRAPE_INTERVAL_GPU: ${OBSERVABILITY_SCRAPE_INTERVAL_GPU:-5s}
+      OBSERVABILITY_SCRAPE_TIMEOUT_GPU: ${OBSERVABILITY_SCRAPE_TIMEOUT_GPU:-4s}
+      OBSERVABILITY_SCRAPE_INTERVAL_DOCKER: ${OBSERVABILITY_SCRAPE_INTERVAL_DOCKER:-15s}
+      OBSERVABILITY_SCRAPE_TIMEOUT_DOCKER: ${OBSERVABILITY_SCRAPE_TIMEOUT_DOCKER:-10s}
+      OBSERVABILITY_SCRAPE_INTERVAL_LLAMACPP: ${OBSERVABILITY_SCRAPE_INTERVAL_LLAMACPP:-15s}
+      OBSERVABILITY_SCRAPE_TIMEOUT_LLAMACPP: ${OBSERVABILITY_SCRAPE_TIMEOUT_LLAMACPP:-10s}
+      OBSERVABILITY_SCRAPE_INTERVAL_LITELLM: ${OBSERVABILITY_SCRAPE_INTERVAL_LITELLM:-30s}
+      OBSERVABILITY_SCRAPE_TIMEOUT_LITELLM: ${OBSERVABILITY_SCRAPE_TIMEOUT_LITELLM:-25s}
+      OBSERVABILITY_SCRAPE_INTERVAL_VLLM: ${OBSERVABILITY_SCRAPE_INTERVAL_VLLM:-15s}
+      OBSERVABILITY_SCRAPE_TIMEOUT_VLLM: ${OBSERVABILITY_SCRAPE_TIMEOUT_VLLM:-10s}
+      OBSERVABILITY_JOURNAL_MAX_AGE: ${OBSERVABILITY_JOURNAL_MAX_AGE:-12h}
     extra_hosts:
       - host.docker.internal:host-gateway
     ports:
-      - "0.0.0.0:12345:12345"
+      - "0.0.0.0:${ALLOY_HOST_PORT:-12345}:12345"
     volumes:
       - ./config/config.alloy:/etc/alloy/config.alloy:ro
       - ./volumes/alloy:/var/lib/alloy
@@ -123,8 +149,8 @@ services:
   # Exposes: utilization, memory, thermals, power, clocks, ECC errors.
   # ──────────────────────────────────────────────────────────────────────────
   gpu-telemetry:
-    image: nvcr.io/nvidia/k8s/dcgm-exporter:4.5.3-4.8.2-distroless
-    container_name: gpu-telemetry
+    image: ${DCGM_EXPORTER_IMAGE:-nvcr.io/nvidia/k8s/dcgm-exporter:4.5.3-4.8.2-distroless}
+    container_name: ${GPU_TELEMETRY_CONTAINER_NAME:-gpu-telemetry}
     restart: "no"
     profiles:
       - gpu-telemetry
@@ -142,8 +168,8 @@ services:
   # Limited to Docker-in-Docker (--docker_only=true) — skips non-Docker cgroups.
   # ──────────────────────────────────────────────────────────────────────────
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:v0.52.1
-    container_name: cadvisor
+    image: ${CADVISOR_IMAGE:-gcr.io/cadvisor/cadvisor:v0.52.1}
+    container_name: ${CADVISOR_CONTAINER_NAME:-cadvisor}
     restart: "no"
     profiles:
       - cadvisor
@@ -174,8 +200,8 @@ services:
   # Requires Postgres healthy, Mimir + Loki started before launching.
   # ──────────────────────────────────────────────────────────────────────────
   grafana:
-    image: grafana/grafana-oss:latest
-    container_name: grafana
+    image: ${GRAFANA_IMAGE:-grafana/grafana-oss:latest}
+    container_name: ${GRAFANA_CONTAINER_NAME:-grafana}
     restart: "no"
     user: "0:0"
     profiles:
@@ -207,7 +233,7 @@ services:
       GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL}
       GF_USERS_ALLOW_SIGN_UP: "false"
     ports:
-      - "0.0.0.0:3000:3000"
+      - "0.0.0.0:${GRAFANA_HOST_PORT:-3000}:3000"
     volumes:
       - ./config/grafana/provisioning:/etc/grafana/provisioning:ro
       - ./volumes/grafana:/var/lib/grafana

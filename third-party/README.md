@@ -4,9 +4,9 @@ External dependencies vendored as git submodules for the `.init` stack.
 
 ## Contents
 
-| Path | Upstream | License | Purpose |
-|---|---|---|---|
-| `llama.cpp/` | [ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp) | MIT | GPU-accelerated LLM inference backend |
+| Path         | Upstream                                                    | License | Purpose                               |
+| ------------ | ----------------------------------------------------------- | ------- | ------------------------------------- |
+| `llama.cpp/` | [ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp) | MIT     | GPU-accelerated LLM inference backend |
 
 ## llama.cpp
 
@@ -40,16 +40,16 @@ make -j16
 
 Key flags explained:
 
-| Flag | Value | Why |
-|---|---|---|
-| `-DGGML_CUDA=ON` | — | Enables CUDA backend for GPU inference |
+| Flag                               | Value | Why                                                                                                                                      |
+| ---------------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `-DGGML_CUDA=ON`                   | —     | Enables CUDA backend for GPU inference                                                                                                   |
 | `-DCMAKE_CUDA_ARCHITECTURES="121"` | SM121 | Targets DGX Spark's Blackwell GPU. **Do not use "all"** — building for every arch bloats the binary and may invoke incompatible kernels. |
-| `-DLLAMA_CURL=OFF` | — | Disables remote model download (models are local submodules) |
-| `DCMAKE_BUILD_TYPE=Release` | — | Optimized binary |
+| `-DLLAMA_CURL=OFF`                 | —     | Disables remote model download (models are local submodules)                                                                             |
+| `DCMAKE_BUILD_TYPE=Release`        | —     | Optimized binary                                                                                                                         |
 
 ### Docker Build
 
-The CI and dockerfiles build the image using these same flags. See `interfaces/dockerfiles/Dockerfile` for the production build.
+The CI and dockerfiles build the image using these same flags. See `docker/llama-cpp-dgx/Dockerfile` for the production build.
 
 ### Updating
 

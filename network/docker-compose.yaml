@@ -9,8 +9,8 @@
 
 services:
   cloudflared:
-    image: cloudflare/cloudflared:latest
-    container_name: cloudflared
+    image: ${CLOUDFLARED_IMAGE:-cloudflare/cloudflared:latest}
+    container_name: ${CLOUDFLARED_CONTAINER_NAME:-cloudflared}
     restart: unless-stopped
     profiles:
       - cloudflared

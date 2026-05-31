@@ -8,8 +8,8 @@ api:
   prometheus_http_prefix: /
 
 server:
-  http_listen_port: 9009
-  log_level: warn
+  http_listen_port: ${OBSERVABILITY_MIMIR_HTTP_PORT:-9009}
+  log_level: ${OBSERVABILITY_MIMIR_LOG_LEVEL:-warn}
 
 common:
   storage:
@@ -54,7 +54,7 @@ alertmanager_storage:
     dir: /var/lib/mimir/alertmanager-storage
 
 limits:
-  compactor_blocks_retention_period: ${MIMIR_RETENTION_PERIOD:7d}
+  compactor_blocks_retention_period: ${MIMIR_RETENTION_PERIOD:-7d}
 
 usage_stats:
   enabled: false

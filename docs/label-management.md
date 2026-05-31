@@ -6,10 +6,10 @@ This document describes how OCI labels, tags, and retention are managed for cont
 
 All images are published to **GitHub Container Registry (GHCR)** under the `nilayparikh` organization:
 
-| Image | GHCR Repository |
-|-------|-----------------|
+| Image           | GHCR Repository                     |
+| --------------- | ----------------------------------- |
 | `llama-cpp-dgx` | `ghcr.io/nilayparikh/llama-cpp-dgx` |
-| `claude-code` | `ghcr.io/nilayparikh/claude-code` |
+| `claude-code`   | `ghcr.io/nilayparikh/claude-code`   |
 
 Authentication is handled automatically by GHA via `secrets.GITHUB_TOKEN` with `packages: write` permission.
 
@@ -18,18 +18,18 @@ Authentication is handled automatically by GHA via `secrets.GITHUB_TOKEN` with `
 Every image carries the full set of [OCI image-spec annotations](https://github.com/opencontainers/image-spec/blob/main/annotations.md).
 These are injected by the CI workflows via `docker/metadata-action` and also baked directly into each Dockerfile as fallback defaults.
 
-| Label | Source | Purpose |
-|-------|--------|---------|
-| `org.opencontainers.image.title` | Workflow | Short name of the image |
+| Label                                  | Source   | Purpose                       |
+| -------------------------------------- | -------- | ----------------------------- |
+| `org.opencontainers.image.title`       | Workflow | Short name of the image       |
 | `org.opencontainers.image.description` | Workflow | Single-line purpose statement |
-| `org.opencontainers.image.url` | Workflow | Project homepage |
-| `org.opencontainers.image.source` | Workflow | GitHub source repo |
-| `org.opencontainers.image.licenses` | Static | MIT |
-| `org.opencontainers.image.vendor` | Static | Nilay Parikh |
-| `org.opencontainers.image.authors` | Static | Maintainer contact |
-| `org.opencontainers.image.version` | Workflow | Git ref name or semver tag |
-| `org.opencontainers.image.revision` | Workflow | Full git commit SHA |
-| `org.opencontainers.image.created` | Workflow | Build timestamp |
+| `org.opencontainers.image.url`         | Workflow | Project homepage              |
+| `org.opencontainers.image.source`      | Workflow | GitHub source repo            |
+| `org.opencontainers.image.licenses`    | Static   | Apache-2.0                    |
+| `org.opencontainers.image.vendor`      | Static   | Nilay Parikh                  |
+| `org.opencontainers.image.authors`     | Static   | Maintainer contact            |
+| `org.opencontainers.image.version`     | Workflow | Git ref name or semver tag    |
+| `org.opencontainers.image.revision`    | Workflow | Full git commit SHA           |
+| `org.opencontainers.image.created`     | Workflow | Build timestamp               |
 
 These labels are visible in the GHCR web UI under "Image Details" and are queryable via the `gh` CLI:
 
@@ -41,14 +41,14 @@ gh api /users/nilayparikh/packages/container/llama-cpp-dgx/versions
 
 Tags are generated deterministically by `docker/metadata-action` using these rules:
 
-| Tag Pattern | When | Example |
-|-------------|------|---------|
-| `latest` | Push to `main` | `ghcr.io/nilayparikh/llama-cpp-dgx:latest` |
-| `sha-<abbrev>` | Every push | `ghcr.io/nilayparikh/llama-cpp-dgx:sha-a1b2c3d` |
-| `<branch>` | Push to named branch | `ghcr.io/nilayparikh/llama-cpp-dgx:feature-x` |
-| `<tag>` | Push with git tag | `ghcr.io/nilayparikh/llama-cpp-dgx:v1.0.0` |
-| `<major>.<minor>` | Semver git tag | `ghcr.io/nilayparikh/llama-cpp-dgx:1.0` |
-| `<version>` | Semver git tag | `ghcr.io/nilayparikh/llama-cpp-dgx:1.0.0` |
+| Tag Pattern       | When                 | Example                                         |
+| ----------------- | -------------------- | ----------------------------------------------- |
+| `latest`          | Push to `main`       | `ghcr.io/nilayparikh/llama-cpp-dgx:latest`      |
+| `sha-<abbrev>`    | Every push           | `ghcr.io/nilayparikh/llama-cpp-dgx:sha-a1b2c3d` |
+| `<branch>`        | Push to named branch | `ghcr.io/nilayparikh/llama-cpp-dgx:feature-x`   |
+| `<tag>`           | Push with git tag    | `ghcr.io/nilayparikh/llama-cpp-dgx:v1.0.0`      |
+| `<major>.<minor>` | Semver git tag       | `ghcr.io/nilayparikh/llama-cpp-dgx:1.0`         |
+| `<version>`       | Semver git tag       | `ghcr.io/nilayparikh/llama-cpp-dgx:1.0.0`       |
 
 ### `llama-cpp-dgx` special tags
 

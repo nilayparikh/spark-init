@@ -42,37 +42,37 @@ prometheus.relabel "host_metrics" {
 
   rule {
     target_label = "cluster_tenant"
-    replacement  = "spark_dgx_core"
+    replacement  = env("OBSERVABILITY_CLUSTER_TENANT")
   }
 
   rule {
     target_label = "environment"
-    replacement  = "personal"
+    replacement  = env("OBSERVABILITY_ENVIRONMENT")
   }
 
   rule {
     target_label = "stack"
-    replacement  = "observability-core"
+    replacement  = env("OBSERVABILITY_STACK")
   }
 
   rule {
     target_label = "site"
-    replacement  = "barsana"
+    replacement  = env("OBSERVABILITY_HOST")
   }
 
   rule {
     target_label = "role"
-    replacement  = "spark-dgx"
+    replacement  = env("OBSERVABILITY_ROLE")
   }
 
   rule {
     target_label = "host"
-    replacement  = "barsana"
+    replacement  = env("OBSERVABILITY_HOST")
   }
 
   rule {
     target_label = "instance"
-    replacement  = "barsana"
+    replacement  = env("OBSERVABILITY_HOST")
   }
 
   rule {
@@ -85,8 +85,8 @@ prometheus.scrape "host" {
   targets         = prometheus.exporter.unix.host.targets
   forward_to      = [prometheus.relabel.host_metrics.receiver]
   job_name        = "host-unix"
-  scrape_interval = "5s"
-  scrape_timeout  = "4s"
+  scrape_interval = env("OBSERVABILITY_SCRAPE_INTERVAL_HOST")
+  scrape_timeout  = env("OBSERVABILITY_SCRAPE_TIMEOUT_HOST")
 }
 
 prometheus.relabel "gpu_metrics" {
@@ -94,37 +94,37 @@ prometheus.relabel "gpu_metrics" {
 
   rule {
     target_label = "cluster_tenant"
-    replacement  = "spark_dgx_core"
+    replacement  = env("OBSERVABILITY_CLUSTER_TENANT")
   }
 
   rule {
     target_label = "environment"
-    replacement  = "personal"
+    replacement  = env("OBSERVABILITY_ENVIRONMENT")
   }
 
   rule {
     target_label = "stack"
-    replacement  = "observability-core"
+    replacement  = env("OBSERVABILITY_STACK")
   }
 
   rule {
     target_label = "site"
-    replacement  = "barsana"
+    replacement  = env("OBSERVABILITY_HOST")
   }
 
   rule {
     target_label = "role"
-    replacement  = "spark-dgx"
+    replacement  = env("OBSERVABILITY_ROLE")
   }
 
   rule {
     target_label = "host"
-    replacement  = "barsana"
+    replacement  = env("OBSERVABILITY_HOST")
   }
 
   rule {
     target_label = "instance"
-    replacement  = "barsana"
+    replacement  = env("OBSERVABILITY_HOST")
   }
 
   rule {
@@ -142,8 +142,8 @@ prometheus.scrape "gpu" {
 
   forward_to      = [prometheus.relabel.gpu_metrics.receiver]
   job_name        = "gpu-dcgm"
-  scrape_interval = "5s"
-  scrape_timeout  = "4s"
+  scrape_interval = env("OBSERVABILITY_SCRAPE_INTERVAL_GPU")
+  scrape_timeout  = env("OBSERVABILITY_SCRAPE_TIMEOUT_GPU")
 }
 
 prometheus.relabel "docker_metrics" {
@@ -151,37 +151,37 @@ prometheus.relabel "docker_metrics" {
 
   rule {
     target_label = "cluster_tenant"
-    replacement  = "spark_dgx_core"
+    replacement  = env("OBSERVABILITY_CLUSTER_TENANT")
   }
 
   rule {
     target_label = "environment"
-    replacement  = "personal"
+    replacement  = env("OBSERVABILITY_ENVIRONMENT")
   }
 
   rule {
     target_label = "stack"
-    replacement  = "observability-core"
+    replacement  = env("OBSERVABILITY_STACK")
   }
 
   rule {
     target_label = "site"
-    replacement  = "barsana"
+    replacement  = env("OBSERVABILITY_HOST")
   }
 
   rule {
     target_label = "role"
-    replacement  = "spark-dgx"
+    replacement  = env("OBSERVABILITY_ROLE")
   }
 
   rule {
     target_label = "host"
-    replacement  = "barsana"
+    replacement  = env("OBSERVABILITY_HOST")
   }
 
   rule {
     target_label = "instance"
-    replacement  = "barsana-docker"
+    replacement  = env("OBSERVABILITY_HOST") + "-docker"
   }
 
   rule {
@@ -244,8 +244,8 @@ prometheus.scrape "docker" {
 
   forward_to      = [prometheus.relabel.docker_metrics.receiver]
   job_name        = "docker-cadvisor"
-  scrape_interval = "15s"
-  scrape_timeout  = "10s"
+  scrape_interval = env("OBSERVABILITY_SCRAPE_INTERVAL_DOCKER")
+  scrape_timeout  = env("OBSERVABILITY_SCRAPE_TIMEOUT_DOCKER")
 }
 
 prometheus.relabel "litellm_metrics" {
@@ -253,37 +253,37 @@ prometheus.relabel "litellm_metrics" {
 
   rule {
     target_label = "cluster_tenant"
-    replacement  = "spark_dgx_core"
+    replacement  = env("OBSERVABILITY_CLUSTER_TENANT")
   }
 
   rule {
     target_label = "environment"
-    replacement  = "personal"
+    replacement  = env("OBSERVABILITY_ENVIRONMENT")
   }
 
   rule {
     target_label = "stack"
-    replacement  = "observability-core"
+    replacement  = env("OBSERVABILITY_STACK")
   }
 
   rule {
     target_label = "site"
-    replacement  = "barsana"
+    replacement  = env("OBSERVABILITY_HOST")
   }
 
   rule {
     target_label = "role"
-    replacement  = "spark-dgx"
+    replacement  = env("OBSERVABILITY_ROLE")
   }
 
   rule {
     target_label = "host"
-    replacement  = "barsana"
+    replacement  = env("OBSERVABILITY_HOST")
   }
 
   rule {
     target_label = "instance"
-    replacement  = "llama-mtp-local"
+    replacement  = env("OBSERVABILITY_HOST")
   }
 
   rule {
@@ -308,7 +308,7 @@ prometheus.relabel "litellm_metrics" {
 
   rule {
     target_label = "interface_instance"
-    replacement  = "llama-mtp-local"
+    replacement  = env("OBSERVABILITY_HOST")
   }
 
   rule {
@@ -338,8 +338,8 @@ prometheus.scrape "litellm" {
   forward_to      = [prometheus.relabel.litellm_metrics.receiver]
   job_name        = "litellm-interface"
   metrics_path    = "/metrics/"
-  scrape_interval = "30s"
-  scrape_timeout  = "25s"
+  scrape_interval = env("OBSERVABILITY_SCRAPE_INTERVAL_LITELLM")
+  scrape_timeout  = env("OBSERVABILITY_SCRAPE_TIMEOUT_LITELLM")
 }
 
 prometheus.relabel "llamacpp_metrics" {
@@ -347,32 +347,32 @@ prometheus.relabel "llamacpp_metrics" {
 
   rule {
     target_label = "cluster_tenant"
-    replacement  = "spark_dgx_core"
+    replacement  = env("OBSERVABILITY_CLUSTER_TENANT")
   }
 
   rule {
     target_label = "environment"
-    replacement  = "personal"
+    replacement  = env("OBSERVABILITY_ENVIRONMENT")
   }
 
   rule {
     target_label = "stack"
-    replacement  = "observability-core"
+    replacement  = env("OBSERVABILITY_STACK")
   }
 
   rule {
     target_label = "site"
-    replacement  = "barsana"
+    replacement  = env("OBSERVABILITY_HOST")
   }
 
   rule {
     target_label = "role"
-    replacement  = "spark-dgx"
+    replacement  = env("OBSERVABILITY_ROLE")
   }
 
   rule {
     target_label = "host"
-    replacement  = "barsana"
+    replacement  = env("OBSERVABILITY_HOST")
   }
 
   rule {
@@ -402,7 +402,7 @@ prometheus.relabel "llamacpp_metrics" {
 
   rule {
     target_label = "interface_instance"
-    replacement  = "llama-mtp-local"
+    replacement  = env("OBSERVABILITY_HOST")
   }
 
   rule {
@@ -426,8 +426,8 @@ prometheus.scrape "llamacpp" {
 
   forward_to      = [prometheus.relabel.llamacpp_metrics.receiver]
   job_name        = "llamacpp-native"
-  scrape_interval = "15s"
-  scrape_timeout  = "10s"
+  scrape_interval = env("OBSERVABILITY_SCRAPE_INTERVAL_LLAMACPP")
+  scrape_timeout  = env("OBSERVABILITY_SCRAPE_TIMEOUT_LLAMACPP")
 }
 
 prometheus.relabel "vllm_primary_metrics" {
@@ -435,32 +435,32 @@ prometheus.relabel "vllm_primary_metrics" {
 
   rule {
     target_label = "cluster_tenant"
-    replacement  = "spark_dgx_core"
+    replacement  = env("OBSERVABILITY_CLUSTER_TENANT")
   }
 
   rule {
     target_label = "environment"
-    replacement  = "personal"
+    replacement  = env("OBSERVABILITY_ENVIRONMENT")
   }
 
   rule {
     target_label = "stack"
-    replacement  = "observability-core"
+    replacement  = env("OBSERVABILITY_STACK")
   }
 
   rule {
     target_label = "site"
-    replacement  = "barsana"
+    replacement  = env("OBSERVABILITY_HOST")
   }
 
   rule {
     target_label = "role"
-    replacement  = "spark-dgx"
+    replacement  = env("OBSERVABILITY_ROLE")
   }
 
   rule {
     target_label = "host"
-    replacement  = "barsana"
+    replacement  = env("OBSERVABILITY_HOST")
   }
 
   rule {
@@ -504,8 +504,8 @@ prometheus.scrape "vllm_primary" {
 
   forward_to      = [prometheus.relabel.vllm_primary_metrics.receiver]
   job_name        = "vllm-primary"
-  scrape_interval = "15s"
-  scrape_timeout  = "10s"
+  scrape_interval = env("OBSERVABILITY_SCRAPE_INTERVAL_VLLM")
+  scrape_timeout  = env("OBSERVABILITY_SCRAPE_TIMEOUT_VLLM")
 }
 
 prometheus.relabel "vllm_secondary_metrics" {
@@ -513,32 +513,32 @@ prometheus.relabel "vllm_secondary_metrics" {
 
   rule {
     target_label = "cluster_tenant"
-    replacement  = "spark_dgx_core"
+    replacement  = env("OBSERVABILITY_CLUSTER_TENANT")
   }
 
   rule {
     target_label = "environment"
-    replacement  = "personal"
+    replacement  = env("OBSERVABILITY_ENVIRONMENT")
   }
 
   rule {
     target_label = "stack"
-    replacement  = "observability-core"
+    replacement  = env("OBSERVABILITY_STACK")
   }
 
   rule {
     target_label = "site"
-    replacement  = "barsana"
+    replacement  = env("OBSERVABILITY_HOST")
   }
 
   rule {
     target_label = "role"
-    replacement  = "spark-dgx"
+    replacement  = env("OBSERVABILITY_ROLE")
   }
 
   rule {
     target_label = "host"
-    replacement  = "barsana"
+    replacement  = env("OBSERVABILITY_HOST")
   }
 
   rule {
@@ -582,8 +582,8 @@ prometheus.scrape "vllm_secondary" {
 
   forward_to      = [prometheus.relabel.vllm_secondary_metrics.receiver]
   job_name        = "vllm-secondary"
-  scrape_interval = "15s"
-  scrape_timeout  = "10s"
+  scrape_interval = env("OBSERVABILITY_SCRAPE_INTERVAL_VLLM")
+  scrape_timeout  = env("OBSERVABILITY_SCRAPE_TIMEOUT_VLLM")
 }
 
 prometheus.remote_write "mimir" {
@@ -725,12 +725,12 @@ loki.source.docker "containers" {
   forward_to = [loki.write.local.receiver]
 
   labels = {
-    cluster_tenant = "spark_dgx_core",
-    environment    = "personal",
-    stack          = "observability-core",
-    host           = "barsana",
-    site           = "barsana",
-    role           = "spark-dgx",
+    cluster_tenant = env("OBSERVABILITY_CLUSTER_TENANT"),
+    environment    = env("OBSERVABILITY_ENVIRONMENT"),
+    stack          = env("OBSERVABILITY_STACK"),
+    host           = env("OBSERVABILITY_HOST"),
+    site           = env("OBSERVABILITY_HOST"),
+    role           = env("OBSERVABILITY_ROLE"),
     job            = "machine-docker",
     source_type    = "docker",
     log_domain     = "container",
@@ -751,17 +751,17 @@ loki.relabel "journal_metadata" {
 
   rule {
     target_label = "host"
-    replacement  = "barsana"
+    replacement  = env("OBSERVABILITY_HOST")
   }
 
   rule {
     target_label = "site"
-    replacement  = "barsana"
+    replacement  = env("OBSERVABILITY_HOST")
   }
 
   rule {
     target_label = "role"
-    replacement  = "spark-dgx"
+    replacement  = env("OBSERVABILITY_ROLE")
   }
 
   rule {
@@ -859,13 +859,13 @@ loki.relabel "journal_metadata" {
 // The systemd journal is the primary Linux and NVIDIA log source on this host.
 loki.source.journal "system" {
   path      = "/host/root/var/log/journal"
-  max_age   = "12h"
+  max_age   = env("OBSERVABILITY_JOURNAL_MAX_AGE")
   forward_to = [loki.write.local.receiver]
 
   labels = {
-    cluster_tenant = "spark_dgx_core",
-    environment    = "personal",
-    stack          = "observability-core",
+    cluster_tenant = env("OBSERVABILITY_CLUSTER_TENANT"),
+    environment    = env("OBSERVABILITY_ENVIRONMENT"),
+    stack          = env("OBSERVABILITY_STACK"),
   }
 
   relabel_rules = loki.relabel.journal_metadata.rules
@@ -880,12 +880,12 @@ loki.source.file "ubuntu_text_logs" {
       service_name   = "cloud-init",
       log_category   = "cloud-init",
       source_type    = "file",
-      host           = "barsana",
-      site           = "barsana",
-      role           = "spark-dgx",
-      cluster_tenant = "spark_dgx_core",
-      environment    = "personal",
-      stack          = "observability-core",
+      host           = env("OBSERVABILITY_HOST"),
+      site           = env("OBSERVABILITY_HOST"),
+      role           = env("OBSERVABILITY_ROLE"),
+      cluster_tenant = env("OBSERVABILITY_CLUSTER_TENANT"),
+      environment    = env("OBSERVABILITY_ENVIRONMENT"),
+      stack          = env("OBSERVABILITY_STACK"),
     },
     {
       __path__       = "/host/root/var/log/cloud-init-output.log",
@@ -893,12 +893,12 @@ loki.source.file "ubuntu_text_logs" {
       service_name   = "cloud-init",
       log_category   = "cloud-init",
       source_type    = "file",
-      host           = "barsana",
-      site           = "barsana",
-      role           = "spark-dgx",
-      cluster_tenant = "spark_dgx_core",
-      environment    = "personal",
-      stack          = "observability-core",
+      host           = env("OBSERVABILITY_HOST"),
+      site           = env("OBSERVABILITY_HOST"),
+      role           = env("OBSERVABILITY_ROLE"),
+      cluster_tenant = env("OBSERVABILITY_CLUSTER_TENANT"),
+      environment    = env("OBSERVABILITY_ENVIRONMENT"),
+      stack          = env("OBSERVABILITY_STACK"),
     },
     {
       __path__       = "/host/root/var/log/dpkg.log",
@@ -906,12 +906,12 @@ loki.source.file "ubuntu_text_logs" {
       service_name   = "dpkg",
       log_category   = "package-management",
       source_type    = "file",
-      host           = "barsana",
-      site           = "barsana",
-      role           = "spark-dgx",
-      cluster_tenant = "spark_dgx_core",
-      environment    = "personal",
-      stack          = "observability-core",
+      host           = env("OBSERVABILITY_HOST"),
+      site           = env("OBSERVABILITY_HOST"),
+      role           = env("OBSERVABILITY_ROLE"),
+      cluster_tenant = env("OBSERVABILITY_CLUSTER_TENANT"),
+      environment    = env("OBSERVABILITY_ENVIRONMENT"),
+      stack          = env("OBSERVABILITY_STACK"),
     },
     {
       __path__       = "/host/root/var/log/apt/history.log",
@@ -919,12 +919,12 @@ loki.source.file "ubuntu_text_logs" {
       service_name   = "apt",
       log_category   = "package-management",
       source_type    = "file",
-      host           = "barsana",
-      site           = "barsana",
-      role           = "spark-dgx",
-      cluster_tenant = "spark_dgx_core",
-      environment    = "personal",
-      stack          = "observability-core",
+      host           = env("OBSERVABILITY_HOST"),
+      site           = env("OBSERVABILITY_HOST"),
+      role           = env("OBSERVABILITY_ROLE"),
+      cluster_tenant = env("OBSERVABILITY_CLUSTER_TENANT"),
+      environment    = env("OBSERVABILITY_ENVIRONMENT"),
+      stack          = env("OBSERVABILITY_STACK"),
     },
     {
       __path__       = "/host/root/var/log/apt/term.log",
@@ -932,12 +932,12 @@ loki.source.file "ubuntu_text_logs" {
       service_name   = "apt",
       log_category   = "package-management",
       source_type    = "file",
-      host           = "barsana",
-      site           = "barsana",
-      role           = "spark-dgx",
-      cluster_tenant = "spark_dgx_core",
-      environment    = "personal",
-      stack          = "observability-core",
+      host           = env("OBSERVABILITY_HOST"),
+      site           = env("OBSERVABILITY_HOST"),
+      role           = env("OBSERVABILITY_ROLE"),
+      cluster_tenant = env("OBSERVABILITY_CLUSTER_TENANT"),
+      environment    = env("OBSERVABILITY_ENVIRONMENT"),
+      stack          = env("OBSERVABILITY_STACK"),
     },
     {
       __path__       = "/host/root/var/log/installer/curtin-install.log",
@@ -945,12 +945,12 @@ loki.source.file "ubuntu_text_logs" {
       service_name   = "curtin",
       log_category   = "installer",
       source_type    = "file",
-      host           = "barsana",
-      site           = "barsana",
-      role           = "spark-dgx",
-      cluster_tenant = "spark_dgx_core",
-      environment    = "personal",
-      stack          = "observability-core",
+      host           = env("OBSERVABILITY_HOST"),
+      site           = env("OBSERVABILITY_HOST"),
+      role           = env("OBSERVABILITY_ROLE"),
+      cluster_tenant = env("OBSERVABILITY_CLUSTER_TENANT"),
+      environment    = env("OBSERVABILITY_ENVIRONMENT"),
+      stack          = env("OBSERVABILITY_STACK"),
     },
     {
       __path__       = "/host/root/var/log/installer/installer-journal.txt",
@@ -958,12 +958,12 @@ loki.source.file "ubuntu_text_logs" {
       service_name   = "installer-journal",
       log_category   = "installer",
       source_type    = "file",
-      host           = "barsana",
-      site           = "barsana",
-      role           = "spark-dgx",
-      cluster_tenant = "spark_dgx_core",
-      environment    = "personal",
-      stack          = "observability-core",
+      host           = env("OBSERVABILITY_HOST"),
+      site           = env("OBSERVABILITY_HOST"),
+      role           = env("OBSERVABILITY_ROLE"),
+      cluster_tenant = env("OBSERVABILITY_CLUSTER_TENANT"),
+      environment    = env("OBSERVABILITY_ENVIRONMENT"),
+      stack          = env("OBSERVABILITY_STACK"),
     },
     {
       __path__       = "/host/root/var/log/installer/subiquity-client-debug.log",
@@ -971,12 +971,12 @@ loki.source.file "ubuntu_text_logs" {
       service_name   = "subiquity-client",
       log_category   = "installer",
       source_type    = "file",
-      host           = "barsana",
-      site           = "barsana",
-      role           = "spark-dgx",
-      cluster_tenant = "spark_dgx_core",
-      environment    = "personal",
-      stack          = "observability-core",
+      host           = env("OBSERVABILITY_HOST"),
+      site           = env("OBSERVABILITY_HOST"),
+      role           = env("OBSERVABILITY_ROLE"),
+      cluster_tenant = env("OBSERVABILITY_CLUSTER_TENANT"),
+      environment    = env("OBSERVABILITY_ENVIRONMENT"),
+      stack          = env("OBSERVABILITY_STACK"),
     },
     {
       __path__       = "/host/root/var/log/installer/subiquity-client-info.log",
@@ -984,12 +984,12 @@ loki.source.file "ubuntu_text_logs" {
       service_name   = "subiquity-client",
       log_category   = "installer",
       source_type    = "file",
-      host           = "barsana",
-      site           = "barsana",
-      role           = "spark-dgx",
-      cluster_tenant = "spark_dgx_core",
-      environment    = "personal",
-      stack          = "observability-core",
+      host           = env("OBSERVABILITY_HOST"),
+      site           = env("OBSERVABILITY_HOST"),
+      role           = env("OBSERVABILITY_ROLE"),
+      cluster_tenant = env("OBSERVABILITY_CLUSTER_TENANT"),
+      environment    = env("OBSERVABILITY_ENVIRONMENT"),
+      stack          = env("OBSERVABILITY_STACK"),
     },
     {
       __path__       = "/host/root/var/log/installer/subiquity-server-debug.log",
@@ -997,12 +997,12 @@ loki.source.file "ubuntu_text_logs" {
       service_name   = "subiquity-server",
       log_category   = "installer",
       source_type    = "file",
-      host           = "barsana",
-      site           = "barsana",
-      role           = "spark-dgx",
-      cluster_tenant = "spark_dgx_core",
-      environment    = "personal",
-      stack          = "observability-core",
+      host           = env("OBSERVABILITY_HOST"),
+      site           = env("OBSERVABILITY_HOST"),
+      role           = env("OBSERVABILITY_ROLE"),
+      cluster_tenant = env("OBSERVABILITY_CLUSTER_TENANT"),
+      environment    = env("OBSERVABILITY_ENVIRONMENT"),
+      stack          = env("OBSERVABILITY_STACK"),
     },
     {
       __path__       = "/host/root/var/log/installer/subiquity-server-info.log",
@@ -1010,12 +1010,12 @@ loki.source.file "ubuntu_text_logs" {
       service_name   = "subiquity-server",
       log_category   = "installer",
       source_type    = "file",
-      host           = "barsana",
-      site           = "barsana",
-      role           = "spark-dgx",
-      cluster_tenant = "spark_dgx_core",
-      environment    = "personal",
-      stack          = "observability-core",
+      host           = env("OBSERVABILITY_HOST"),
+      site           = env("OBSERVABILITY_HOST"),
+      role           = env("OBSERVABILITY_ROLE"),
+      cluster_tenant = env("OBSERVABILITY_CLUSTER_TENANT"),
+      environment    = env("OBSERVABILITY_ENVIRONMENT"),
+      stack          = env("OBSERVABILITY_STACK"),
     },
     {
       __path__       = "/host/root/var/log/installer/oemlog/oem-iso-cfg.log",
@@ -1023,12 +1023,12 @@ loki.source.file "ubuntu_text_logs" {
       service_name   = "oem-installer",
       log_category   = "installer",
       source_type    = "file",
-      host           = "barsana",
-      site           = "barsana",
-      role           = "spark-dgx",
-      cluster_tenant = "spark_dgx_core",
-      environment    = "personal",
-      stack          = "observability-core",
+      host           = env("OBSERVABILITY_HOST"),
+      site           = env("OBSERVABILITY_HOST"),
+      role           = env("OBSERVABILITY_ROLE"),
+      cluster_tenant = env("OBSERVABILITY_CLUSTER_TENANT"),
+      environment    = env("OBSERVABILITY_ENVIRONMENT"),
+      stack          = env("OBSERVABILITY_STACK"),
     },
   ]
 
