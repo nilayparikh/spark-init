@@ -72,6 +72,10 @@ dist/
 !.claude/settings.json
 !.claude/CLAUDE.md
 
+# Agent
+.agents/
+.agents1/
+
 # Miscellaneous
 .local
 .npm
